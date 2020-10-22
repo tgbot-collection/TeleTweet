@@ -1,2 +1,2 @@
 # TwitterBot
-🦉A telegram Twitter bot that will allow you send tweets!
+🦉A telegram Twitter bot that will allow you to send tweets!
