@@ -1,5 +1,5 @@
 [Unit]
-Description=A Telegram Bot for Daily Gakki!
+Description=A Telegram Bot for TeleTweet!
 After=network.target network-online.target nss-lookup.target
 
 [Service]
@@ -10,7 +10,8 @@ Environment="consumerKey=123444"
 Environment="consumerSecret=123444"
 Environment="accessToken=2111"
 Environment="accessSecret=123131"
-ExecStart=/home/TeleTweet/TeleTweet
+Environment="owner=123131"
+ExecStart=/usr/bin/python3 /home/TeleTweet/teletweet/bot.py
 
 [Install]
 WantedBy=multi-user.target
