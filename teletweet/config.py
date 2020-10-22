@@ -9,9 +9,11 @@ __author__ = "Benny <benny.think@gmail.com>"
 
 import os
 
-bot_token = os.environ.get("token")
-consumer_key = os.environ.get("consumer_key")
-consumer_secret = os.environ.get("consumer_secret")
-access_token_key = os.environ.get("access_key")
-access_token_secret = os.environ.get("access_secret")
+bot_token = os.environ.get("token") or ""
+consumer_key = os.environ.get("consumer_key") or ""
+consumer_secret = os.environ.get("consumer_secret") or ""
+access_token_key = os.environ.get("access_key") or ""
+access_token_secret = os.environ.get("access_secret") or ""
 proxy_setup = os.environ.get("proxy")
+
+tweet_format = "https://twitter.com/{screen_name}/status/{id}"
