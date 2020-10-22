@@ -63,7 +63,7 @@ def tweet_photo_handler(message):
         bot.send_message(message.chat.id, can)
         return
 
-    bot.send_chat_action(message.chat.id, 'typing', timeout=100)
+    bot.send_chat_action(message.chat.id, 'typing')
     text = message.caption
     if text is None:
         text = ""
