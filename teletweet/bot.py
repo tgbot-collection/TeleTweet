@@ -40,7 +40,7 @@ def help_handler(message):
 @bot.message_handler()
 def tweet_text_handler(message):
     can = can_use(message.chat.id)  # can't use :=
-    if can:
+    if isinstance(can, str):
         bot.send_message(message.chat.id, can)
         return
 
@@ -59,7 +59,7 @@ def tweet_text_handler(message):
 @bot.message_handler(content_types=['photo'])
 def tweet_photo_handler(message):
     can = can_use(message.chat.id)  # can't use :=
-    if can:
+    if isinstance(can, str):
         bot.send_message(message.chat.id, can)
         return
 
