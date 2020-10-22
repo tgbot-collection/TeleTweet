@@ -72,8 +72,8 @@ def tweet_photo_handler(message):
         bot.send_message(message.chat.id, "I don't support media group yet.")
         return
 
-    fid = bot.get_file(message.photo[0].file_id)
-    content = bot.download_file(fid.file_path)
+    file_info = bot.get_file(message.photo[-1].file_id)
+    content = bot.download_file(file_info.file_path)
 
     with tempfile.NamedTemporaryFile() as temp:
         temp.write(content)
