@@ -15,5 +15,6 @@ consumer_secret = os.environ.get("consumer_secret") or ""
 access_token_key = os.environ.get("access_key") or ""
 access_token_secret = os.environ.get("access_secret") or ""
 proxy_setup = os.environ.get("proxy")
+owner = os.environ.get("owner") or ""
 
 tweet_format = "https://twitter.com/{screen_name}/status/{id}"

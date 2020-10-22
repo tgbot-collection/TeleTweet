@@ -13,7 +13,7 @@ import tempfile
 import telebot
 from telebot import apihelper
 
-from config import proxy_setup, bot_token, tweet_format
+from config import proxy_setup, bot_token, tweet_format, owner
 from tweet import send_tweet
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
@@ -39,6 +39,11 @@ def help_handler(message):
 
 @bot.message_handler()
 def tweet_text_handler(message):
+    can = can_use(message.chat.id)  # can't use :=
+    if can:
+        bot.send_message(message.chat.id, can)
+        return
+
     bot.send_chat_action(message.chat.id, 'typing')
     result = send_tweet(message.text)
 
@@ -53,6 +58,11 @@ def tweet_text_handler(message):
 
 @bot.message_handler(content_types=['photo'])
 def tweet_photo_handler(message):
+    can = can_use(message.chat.id)  # can't use :=
+    if can:
+        bot.send_message(message.chat.id, can)
+        return
+
     bot.send_chat_action(message.chat.id, 'typing', timeout=100)
     text = message.caption
     if text is None:
@@ -76,6 +86,13 @@ def tweet_photo_handler(message):
         url = tweet_format.format(screen_name=result["user"]["screen_name"], id=result['id'])
         resp = f"✅ Your [tweet]({url}) has been sent.\n"
     bot.reply_to(message, resp, parse_mode="markdown")
+
+
+def can_use(chat_id) -> (bool, str):
+    if chat_id != int(owner):
+        return "🙅‍️\nFor @BennyThink only, currently."
+    else:
+        return True
 
 
 if __name__ == '__main__':
