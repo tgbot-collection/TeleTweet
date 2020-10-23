@@ -56,7 +56,7 @@ def tweet_text_handler(message):
     bot.reply_to(message, resp, parse_mode="markdown")
 
 
-@bot.message_handler(content_types=['photo'])
+@bot.message_handler(content_types=['photo', 'document'])
 def tweet_photo_handler(message):
     can = can_use(message.chat.id)  # can't use :=
     if isinstance(can, str):
@@ -72,7 +72,11 @@ def tweet_photo_handler(message):
         bot.send_message(message.chat.id, "I don't support media group yet.")
         return
 
-    file_info = bot.get_file(message.photo[-1].file_id)
+    if message.photo:
+        file_id = message.photo[-1].file_id
+    else:
+        file_id = message.document.file_id
+    file_info = bot.get_file(file_id)
     content = bot.download_file(file_info.file_path)
 
     with tempfile.NamedTemporaryFile() as temp:
