@@ -21,9 +21,6 @@ if proxy_setup:
     apihelper.proxy = {'http': proxy_setup}
 bot = telebot.TeleBot(bot_token)
 
-photo_map = {"817262": {"group_id": [""]}
-             }
-
 
 @bot.message_handler(commands=['start'])
 def start_handler(message):
@@ -67,7 +64,6 @@ def tweet_photo_handler(message):
     text = message.caption
     if text is None:
         text = ""
-    photo_map['message.media_group_id'] = message.photo[0].file_id
     if message.media_group_id:
         bot.send_message(message.chat.id, "I don't support media group yet.")
         return
