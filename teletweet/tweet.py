@@ -9,6 +9,7 @@ __author__ = "Benny <benny.think@gmail.com>"
 
 import traceback
 import logging
+import json
 
 import twitter
 
@@ -17,23 +18,26 @@ from config import *
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 
 
-def connect_twitter():
+def connect_twitter(auth_data: dict):
     api = twitter.Api(consumer_key=consumer_key,
                       consumer_secret=consumer_secret,
-                      access_token_key=access_token_key,
-                      access_token_secret=access_token_secret,
+                      access_token_key=auth_data['ACCESS_KEY'],
+                      access_token_secret=auth_data['ACCESS_SECRET'],
                       sleep_on_rate_limit=True)
     return api
 
 
-def send_tweet(text: str, pic=None):
+def send_tweet(chat_id: str, text: str, pic=None):
+    with open("database.json") as f:
+        data: dict = json.load(f)
+
     if pic is None:
         pic = ""
     logging.info("Preparing tweet... %s with %s picture(s)", text, len(pic))
 
     logging.info("Connecting to twitter api")
     try:
-        api = connect_twitter()
+        api = connect_twitter(data[chat_id])
         logging.info("Tweeting...")
         status = api.PostUpdate(text, media=pic)
         logging.info("Tweeted")
