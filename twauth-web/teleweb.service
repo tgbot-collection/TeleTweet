@@ -1,0 +1,14 @@
+[Unit]
+Description=TeleTweet Website
+After=network.target network-online.target nss-lookup.target
+
+[Service]
+User=nobody
+Group=nogroup
+Restart=on-failure
+Type=simple
+WorkingDirectory=/home/TeleTweet/twauth-web
+ExecStart=/usr/bin/python3 /home/TeleTweet/twauth-web/twauth.py
+
+[Install]
+WantedBy=multi-user.target
