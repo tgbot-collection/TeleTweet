@@ -43,5 +43,14 @@ docker run -d --restart=always -e token="TOKEN" \
 - [ ] new
 - [ ] like
 
+# Credits
+* [twauth-web](https://github.com/twitterdev/twauth-web)
+
+
+# FAQ
+## connection reset by peer - twauth-web
+If you ran into this problem when using twauth-web, probably you need to upgrade your Python.
+Try to pyenv and install a latest version of Python, and this will be likely be fixed.
+
 # License
 GPL 2.0
