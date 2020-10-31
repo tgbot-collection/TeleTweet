@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block containercontent %}
+<p class="lead">Welcome to TeleTweet.</p>
+<div class="hero-unit">
+	<p>To get started to use TeleTweet, we'll need you to authorize TeleTweet to access your Twitter account. More information on what is
+		required is available from Twitter's <a href="https://developer.twitter.com/en/docs/basics/authentication/overview/oauth">OAuth</a>
+		overview.</p>
+	<p>Here's the steps:</p>
+	<ol>
+		<li>Click Let's begin button.</li>
+		<li>Then we will redirect you to Twitter.com, for you to authorize our app.</li>
+		<li>While at Twitter.com you will authorize TeleTweet and you'll then be redirected back to us.</li>
+		<li>Then you need to copy the token back to TeleTweet.</li>
+	</ol>
+</div>
+<p>Ready to give this a shot?</p>
+<a href="/step2" class="btn btn-small btn-success">Let's Begin</a>
+{% end %}

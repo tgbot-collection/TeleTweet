@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %} start{% end %}
+{% block containercontent %}
+<h2>Authorize TeleTweet</h2>
+<p>We are ready for you to authorize <strong>TeleTweet</strong>!
+    Just click the button below, you'll be taken to Twitter to login (if you aren't already) and to grant access to
+    <strong>TeleTweet</strong>. Afterward you'll be redirected back to us.</p>
+<p><a href="{{ authorize_url }}?oauth_token={{ oauth_token }}" class="btn btn-small btn-success">Authorize TeleTweet</a></p>
+<hr>
+<p>If you're unable to click the above button, you could also copy&paste this link</p>
+<a href="{{ authorize_url }}?oauth_token={{ oauth_token }}">{{ authorize_url }}?oauth_token={{ oauth_token }}</a>
+{% end %}

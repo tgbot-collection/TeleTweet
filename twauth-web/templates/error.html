@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}error{% end %}
+{% block containercontent %}
+	    <h2>error</h2>
+    	<div class="panel panel-danger">
+    		<div class="panel-heading">
+    			<h3 class="panel-title">Yikes, something went wrong!</h3>
+    		</div>
+    		<div class="panel-body">{{ error_message }}</div>
+    	</div>
+    	<a href="/step1" class="btn btn-small btn-primary">Let me try again</a>
+{% end %}

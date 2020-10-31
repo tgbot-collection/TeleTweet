@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %} success{% end %}
+{% block containercontent %}
+<h2>success</h2>
+<p>Thank you, <strong>{{ name }}</strong>, for authorizing TeleTweet an access token for <a
+        href="https://twitter.com/{{ screen_name }}">@{{
+    screen_name }}</a>.
+</p>
+<p>Copy the following secret passphrase to TeleTweet bot. This passphrase will only be shown once, so keep this
+    safe!</p>
+<hr>
+<p><a id="button" href="javascript:void(0);"
+      onclick="copyText()" class="btn btn-small btn-success">Copy passphrase</a></p>
+
+<p id="token"> {{bot_paste}}</p>
+
+<script>
+    function copyText() {
+
+        let transfer = document.createElement('input');
+        document.body.appendChild(transfer);
+        let target = document.getElementById("token")
+        transfer.value = target.textContent;  // 这里表示想要复制的内容
+        transfer.focus();
+        transfer.select();
+        if (document.execCommand('copy')) {
+            document.execCommand('copy');
+        }
+        transfer.blur();
+        document.getElementById("button").innerText = "Copied!"
+        document.body.removeChild(transfer);
+        setTimeout(function () {
+            document.getElementById("button").innerText = "Copy passphrase"
+        }, 1500);
+
+    }
+
+</script>
+
+
+{% end %}

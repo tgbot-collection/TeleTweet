@@ -1,2 +1,4 @@
 pytelegrambotapi
 python-twitter
+oauth2
+tornado

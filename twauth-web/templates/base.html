@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>TeleTweet{% block title %}{% end %}</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+</head>
+
+<body>
+<div class="container">
+    <h1>Welcome to TeleTweet</h1>
+    {% block containercontent %}{% end %}
+    <hr>
+    <div class="footer">
+        <p class="text-muted">
+            <small>
+                Credits go for the <a href="https://twitter.com/TwitterDev">@TwitterDev</a> team.
+                The original source code for this site can be found at <a
+                    href="https://github.com/twitterdev/twauth-web">here</a>.
+                This site has been rewritten in <a href="https://www.tornadoweb.org/en/stable/">Tornado</a>.
+            </small>
+            <br>
+            <br>
+            <a href="https://github.com/tgbot-collection/TeleTweet" target="_blank"> TeleTweet</a>
+            created by <a href="https://github.com/BennyThink">BennyThink</a>.
+
+        </p>
+    </div>
+</div>
+</body>
+
+</html>
