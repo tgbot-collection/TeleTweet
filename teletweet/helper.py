@@ -13,4 +13,4 @@ import json
 def can_use(chat_id) -> bool:
     with open("database.json") as f:
         data: dict = json.load(f)
-    return data.get(chat_id)
+    return data.get(str(chat_id))

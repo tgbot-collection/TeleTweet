@@ -13,15 +13,13 @@ import json
 
 from base64 import b64decode
 import telebot
-from telebot import apihelper
 
-from config import proxy_setup, bot_token, tweet_format
+from config import bot_token, tweet_format
 from helper import can_use
 from tweet import send_tweet
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
-if proxy_setup:
-    apihelper.proxy = {'http': proxy_setup}
+
 bot = telebot.TeleBot(bot_token)
 
 
@@ -53,10 +51,10 @@ def add_auth(message):
         bot.send_message(message.chat.id, f"Your token appears to be invalid.\n`{e}`", parse_mode='markdown')
         return
 
-        # read json file, update it, write back
     with open("database.json") as f:
         data: dict = json.load(f)
-        data[message.chat.id] = json.loads(twitter_auth)
+        # json key must be str, so convert it here
+        data[str(message.chat.id)] = json.loads(twitter_auth)
     with open("database.json", "w") as f:
         json.dump(data, f, indent="\t")
 
@@ -111,7 +109,7 @@ def tweet_photo_handler(message):
     with tempfile.NamedTemporaryFile() as temp:
         temp.write(content)
 
-        result = send_tweet(text, [temp])
+        result = send_tweet(message.chat.id, text, [temp])
 
     if result.get("error"):
         resp = f"❌ Error: `{result['error']}`"
