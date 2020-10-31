@@ -27,7 +27,7 @@ def connect_twitter(auth_data: dict):
     return api
 
 
-def send_tweet(chat_id: str, text: str, pic=None):
+def send_tweet(chat_id: int, text: str, pic=None):
     with open("database.json") as f:
         data: dict = json.load(f)
 
@@ -37,7 +37,7 @@ def send_tweet(chat_id: str, text: str, pic=None):
 
     logging.info("Connecting to twitter api")
     try:
-        api = connect_twitter(data[chat_id])
+        api = connect_twitter(data[str(chat_id)])
         logging.info("Tweeting...")
         status = api.PostUpdate(text, media=pic)
         logging.info("Tweeted")
