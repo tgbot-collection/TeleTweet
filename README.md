@@ -9,14 +9,19 @@ This bot is still under **early development process**. Anything may subject to c
 ## 2. Data security
 You need to use oauth to use this bot, and this bot will **save your oauth token** in its file system.
 Under this circumstance, it means: 1). The bot will have access to your Twitter data 
-2). the oauth token **might be seen by me** accidentally, but I promise I won't do anything with your twitter account
+2). the oauth token has been encrypted by AES-128-CBC. 
+However, due to technical limitation, the encryption key is **available from host machine**, 
+but I promise I won't do anything with your twitter account.
 ## 3. oauth token
-The token was saved as **plaintext which I know was a bad practice.** 
-But I haven't found any practical cryptography means 
-to protect from eavesdropping from me and data leak by crackers.
+The token was saved with **AES-128-CBC**, and the key is **available from the host machine**.
+This means anyone have access to host machine could acquire key and decrypt the token.
 
-Maybe I'll add AES encryption later,
-but it seems helpless because attack could acquire AES key in Python code if he controls my machine.
+Anyway, I promise I won't touch your token and Twitter account 
+and I'll **do everything I can** to secure my host machine.
+
+It's just like you're using a third party Twitter App, you trust it so you choose to use it. It's just like that.
+
+Nevertheless, you could try to deploy your own bot - it's an open source project, you know.
 
 # screenshots
 ![](assets/1.png)
@@ -25,7 +30,7 @@ but it seems helpless because attack could acquire AES key in Python code if he 
 # Commands
 ```
 start - Start using it today
-sign_in - Go to oauth
+sign_in - Go to sign in with twitter
 sign_off - sign off
 help - What is this bot
 ```
@@ -82,10 +87,10 @@ bennythink/teletweet python3 /TeleTweet/twauth-web/twuath.py
 ```
 
 # Plans
-- [x] support multi-user, based on oauth
-- [] help
-- [ ] about
-- [ ] start
+- [x] support multi-user, based on oauth, encrypted with AES-128-CBC
+- [x] help
+- [x] about
+- [x] start
 - [ ] timeline
 - [ ] new
 - [ ] like
