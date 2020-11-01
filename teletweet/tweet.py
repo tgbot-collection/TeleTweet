@@ -13,14 +13,15 @@ import json
 
 import twitter
 
-from config import *
+from config import CONSUMER_KEY, CONSUMER_SECRET
+from helper import read_file, decrypt
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 
 
 def connect_twitter(auth_data: dict):
-    api = twitter.Api(consumer_key=consumer_key,
-                      consumer_secret=consumer_secret,
+    api = twitter.Api(consumer_key=CONSUMER_KEY,
+                      consumer_secret=CONSUMER_SECRET,
                       access_token_key=auth_data['ACCESS_KEY'],
                       access_token_secret=auth_data['ACCESS_SECRET'],
                       sleep_on_rate_limit=True)
@@ -28,8 +29,7 @@ def connect_twitter(auth_data: dict):
 
 
 def send_tweet(chat_id: int, text: str, pic=None):
-    with open("database.json") as f:
-        data: dict = json.load(f)
+    data: dict = json.loads(decrypt(read_file()))
 
     if pic is None:
         pic = ""
