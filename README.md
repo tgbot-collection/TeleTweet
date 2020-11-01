@@ -25,7 +25,8 @@ but it seems helpless because attack could acquire AES key in Python code if he 
 # Commands
 ```
 start - Start using it today
-auth - Go to oauth
+sign_in - Go to oauth
+sign_off - sign off
 help - What is this bot
 ```
 # Usage
