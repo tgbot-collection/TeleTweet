@@ -33,7 +33,7 @@ def send_tweet(chat_id: int, text: str, pic=None):
 
     if pic is None:
         pic = ""
-    logging.info("Preparing tweet... %s with %s picture(s)", text, len(pic))
+    logging.info("Preparing tweet for someone...")
 
     logging.info("Connecting to twitter api")
     try:
