@@ -28,15 +28,15 @@ def start_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     msg = 'Welcome to TeleTweet. ' \
           'This bot will connect you from Telegram Bot to Twitter.' \
-          'Wanna get started now? Type /auth now!'
+          'Wanna get started now? Type /sign_in now!'
     bot.send_message(message.chat.id, msg)
 
 
-@bot.message_handler(commands=['auth'])
+@bot.message_handler(commands=['sign_in'])
 def auth_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    msg = 'Click this [link](https://teletweet.app) to auth you twitter.' \
-          ' When your auth is done, send auth code back to me'
+    msg = 'Click this [link](https://teletweet.app) to login in you twitter.' \
+          ' When your login in is done, send auth code back to me'
     bot.send_message(message.chat.id, msg, parse_mode='markdown')
 
     bot.register_next_step_handler(message, add_auth)
@@ -58,7 +58,7 @@ def add_auth(message):
     with open("database.json", "w") as f:
         json.dump(data, f, indent="\t")
 
-    bot.send_message(message.chat.id, f"Auth success!")
+    bot.send_message(message.chat.id, f"Sign in success!")
 
 
 @bot.message_handler(commands=['help'])
@@ -71,7 +71,7 @@ def help_handler(message):
 def tweet_text_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     if not can_use(message.chat.id):
-        bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /auth to auth.")
+        bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
         return
 
     result = send_tweet(message.chat.id, message.text)
@@ -89,7 +89,7 @@ def tweet_text_handler(message):
 def tweet_photo_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     if not can_use(message.chat.id):
-        bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /auth to auth.")
+        bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
         return
 
     text = message.caption
