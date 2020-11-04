@@ -39,7 +39,7 @@ def __get_container_info(container_name: str) -> str:
     stats = requests.get(f"http://socat:2375/containers/{container_name}/stats?stream=0").json()
     inspect = requests.get(f"http://socat:2375/containers/{container_name}/json").json()
 
-    start_time = inspect["State"]["StartedAt"][0:-2]
+    start_time = inspect["State"]["StartedAt"][0:26]
     utc_time = datetime.datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%S.%f")
     delta = datetime.timedelta(hours=8)
     run = datetime.datetime.now() - utc_time - delta
