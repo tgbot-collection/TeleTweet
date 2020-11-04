@@ -30,7 +30,7 @@ def __get_container_info(container_name: str) -> str:
     # http://socat:2375/containers/untitled_socat_1/json
     # http://socat:2375/containers/osstpmgt_websvc_1/stats?stream=0
     msg_template = "This bot has been running for `{run}` from " \
-                   "`{started_at}`😀\n" \
+                   "`{started_at} CST`😀\n" \
                    "CPU: `{cpu}`\n" \
                    "RAM: `{ram}`\n" \
                    "Network: `{rx}/{tx}`\n" \
@@ -43,8 +43,7 @@ def __get_container_info(container_name: str) -> str:
     utc_time = datetime.datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%S.%f")
     delta = datetime.timedelta(hours=8)
     run = datetime.datetime.now() - utc_time - delta
-
-    localtime: str = (utc_time + delta).strftime("%Y-%m-%d %H:%M:%S")
+    localtime: str = (utc_time + delta).astimezone().strftime("%Y-%m-%d %H:%M:%S %z")
 
     io_stats = stats["blkio_stats"]["io_service_bytes_recursive"]
     io_read, io_write = "0B", "0B"
@@ -93,3 +92,7 @@ def __human_bytes(byte: int) -> str:
         return '{0:.2f}GB'.format(byte / gb)
     elif tb <= byte:
         return '{0:.2f}TB'.format(byte / tb)
+
+
+if __name__ == '__main__':
+    get_runtime()
