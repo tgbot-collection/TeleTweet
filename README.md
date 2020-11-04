@@ -30,9 +30,10 @@ Nevertheless, you could try to deploy your own bot - it's an open source project
 # Commands
 ```
 start - Start using it today
-sign_in - Go to sign in with twitter
-sign_off - sign off
+sign_in - Go to sign in with Twitter
+sign_off - sign off from Twitter
 help - What is this bot
+status - Status about this bot
 ```
 # Usage
 Chat with [this bot](https://t.me/tele_tweetbot), and go to oauth by its instruction:

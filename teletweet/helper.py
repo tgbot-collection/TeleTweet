@@ -12,7 +12,6 @@ import os
 import base64
 import logging
 
-from base64 import b64decode
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -79,7 +78,7 @@ def sign_off(chat_id: str):
 
 def sign_in(chat_id: str, user_text: str) -> str:
     try:
-        twitter_auth = b64decode(user_text)
+        twitter_auth = base64.b64decode(user_text)
     except ValueError as e:
         logging.error("Base64 decode failed %s", e)
         msg = f"Your token appears to be invalid.\n`{e}`"
@@ -100,6 +99,6 @@ def is_sign_in(chat_id: str) -> bool:
 
 def init_enc():
     if os.path.getsize("database.enc") == 0:
-        logging.info("Init the encrytion database now...")
+        logging.info("Init the encryption database now...")
         ct = encrypt("{}")
         write_file(ct)

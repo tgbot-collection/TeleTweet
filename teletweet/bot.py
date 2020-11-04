@@ -13,6 +13,7 @@ import telebot
 
 from config import BOT_TOKEN, tweet_format
 from helper import can_use, sign_in, init_enc, sign_off, is_sign_in
+from status import get_runtime
 from tweet import send_tweet
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -64,6 +65,12 @@ def sign_off_handler(message):
 def help_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     bot.send_message(message.chat.id, 'Author: @BennyThink\nGitHub: https://github.com/tgbot-collection/TeleTweet')
+
+
+@bot.message_handler(commands=['status'])
+def help_handler(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    bot.send_message(message.chat.id, get_runtime(), parse_mode="markdown")
 
 
 @bot.message_handler()

@@ -3,3 +3,4 @@ python-twitter
 oauth2
 tornado
 cryptography
+requests
