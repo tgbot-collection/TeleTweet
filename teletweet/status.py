@@ -33,8 +33,8 @@ def __get_container_info(container_name: str) -> str:
                    "`{started_at} CST`😀\n" \
                    "CPU: `{cpu}`\n" \
                    "RAM: `{ram}`\n" \
-                   "Network: `{rx}/{tx}`\n" \
-                   "IO: `{R}/{W}`\n" \
+                   "Network RX/TX: `{rx}/{tx}`\n" \
+                   "IO R/W: `{R}/{W}`\n" \
                    "👍"
     stats = requests.get(f"http://socat:2375/containers/{container_name}/stats?stream=0").json()
     inspect = requests.get(f"http://socat:2375/containers/{container_name}/json").json()
