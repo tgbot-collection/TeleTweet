@@ -4,3 +4,4 @@ oauth2
 tornado
 cryptography
 requests
+tgbot-ping
