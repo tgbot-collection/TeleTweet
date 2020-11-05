@@ -33,7 +33,7 @@ start - Start using it today
 sign_in - Go to sign in with Twitter
 sign_off - sign off from Twitter
 help - What is this bot
-status - Status about this bot
+ping - Status about this bot
 ```
 # Usage
 Chat with [this bot](https://t.me/tele_tweetbot), and go to oauth by its instruction:

@@ -67,7 +67,7 @@ def help_handler(message):
     bot.send_message(message.chat.id, 'Author: @BennyThink\nGitHub: https://github.com/tgbot-collection/TeleTweet')
 
 
-@bot.message_handler(commands=['status'])
+@bot.message_handler(commands=['ping'])
 def help_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     bot.send_message(message.chat.id, get_runtime(), parse_mode="markdown")
