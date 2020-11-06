@@ -14,7 +14,7 @@ import telebot
 from config import BOT_TOKEN, tweet_format
 from helper import can_use, sign_in, init_enc, sign_off, is_sign_in
 from tgbot_ping import get_runtime
-from tweet import send_tweet
+from tweet import send_tweet, get_me
 
 bot = telebot.TeleBot(BOT_TOKEN)
 init_enc()
@@ -70,8 +70,9 @@ def help_handler(message):
 @bot.message_handler(commands=['ping'])
 def help_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
+    userinfo = get_me(message.chat.id) + "\n\n"
     info = get_runtime("botsrunner_teletweet_1")
-    bot.send_message(message.chat.id, info, parse_mode="markdown")
+    bot.send_message(message.chat.id, userinfo + info, parse_mode="markdown", disable_web_page_preview=True)
 
 
 @bot.message_handler()

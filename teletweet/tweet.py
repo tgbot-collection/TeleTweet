@@ -47,3 +47,23 @@ def send_tweet(chat_id: int, text: str, pic=None):
         response = {"error": str(e)}
 
     return response
+
+
+def get_me(chat_id) -> str:
+    logging.info("Get me")
+    data: dict = json.loads(decrypt(read_file()))
+
+    try:
+        api = connect_twitter(data[str(chat_id)])
+        name = api.VerifyCredentials().name
+        user_id = api.VerifyCredentials().screen_name
+        response = f"Hello👋 [{name}](https://twitter.com/{user_id})"
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        response = {"error": str(e)}
+
+    return response
+
+
+if __name__ == '__main__':
+    get_me("260260121")
