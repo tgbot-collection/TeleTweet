@@ -54,7 +54,6 @@ def get_fernet():
 
 
 def encrypt(data: [str, bytes]) -> bytes:
-    logging.info("Encrypting now...")
     f = get_fernet()
     if isinstance(data, str):
         data = data.encode('u8')
@@ -62,7 +61,6 @@ def encrypt(data: [str, bytes]) -> bytes:
 
 
 def decrypt(data: [str, bytes]) -> bytes:
-    logging.info("Decrypting now...")
     f = get_fernet()
     if isinstance(data, str):
         data = data.encode('u8')
@@ -102,3 +100,9 @@ def init_enc():
         logging.info("Init the encryption database now...")
         ct = encrypt("{}")
         write_file(ct)
+
+
+def decrypt_to_auth(chat_id) -> dict:
+    logging.info("Decrypting user auth data...")
+    data: dict = json.loads(decrypt(read_file()))
+    return data[str(chat_id)]

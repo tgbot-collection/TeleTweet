@@ -81,8 +81,7 @@ def tweet_text_handler(message):
     if not can_use(message.chat.id):
         bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
         return
-
-    result = send_tweet(message.chat.id, message.text)
+    result = send_tweet(message)
 
     if result.get("error"):
         resp = f"❌ Error: `{result['error']}`"
@@ -100,9 +99,6 @@ def tweet_photo_handler(message):
         bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
         return
 
-    text = message.caption
-    if text is None:
-        text = ""
     if message.media_group_id:
         bot.send_message(message.chat.id, "I don't support media group yet.")
         return
@@ -111,13 +107,14 @@ def tweet_photo_handler(message):
         file_id = message.photo[-1].file_id
     else:
         file_id = message.document.file_id
+
+    bot.send_chat_action(message.chat.id, 'upload_photo')
     file_info = bot.get_file(file_id)
     content = bot.download_file(file_info.file_path)
 
     with tempfile.NamedTemporaryFile() as temp:
         temp.write(content)
-
-        result = send_tweet(message.chat.id, text, [temp])
+        result = send_tweet(message, [temp])
 
     if result.get("error"):
         resp = f"❌ Error: `{result['error']}`"
