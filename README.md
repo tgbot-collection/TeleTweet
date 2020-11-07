@@ -23,10 +23,6 @@ It's just like you're using a third party Twitter App, you trust it so you choos
 
 Nevertheless, you could try to deploy your own bot - it's an open source project, you know.
 
-# screenshots
-![](assets/1.png)
-
-
 # Commands
 ```
 start - Start using it today
@@ -34,19 +30,34 @@ sign_in - Go to sign in with Twitter
 sign_off - sign off from Twitter
 help - What is this bot
 ping - Status about this bot
+delete - Delete tweet
 ```
+
 # Usage
+## screenshots
+![](assets/tweet.png)
+## sign in
 Chat with [this bot](https://t.me/tele_tweetbot), and go to oauth by its instruction:
 ![](assets/intro.png)
-
 Copy and paste the auth code to this bot. And you're good to go!
+## tweet
+### new thread tweet
 Send any text message, photo/photo as file with caption will send tweet with photos.
-
-![](assets/tweet.png)
+![](assets/tweet_web.png)
+### reply to this thread
+Reply to bot's tweet message,
+![](assets/thread-bot.png)
+and you'll consult in a series of thread.
+![](assets/thread-web.png)
+## delete tweet
+Reply command `/delete` to bot's message and it will delete this tweet for you.
+![](assets/delete.png)
 
 # Features
 * send text tweet
 * send tweet with one photo(photo and document are supported.)
+* reply bot tweet message to add more tweets to this thread
+* reply `/delete` to delete tweet
 
 # General deployment
 This bot use oauth, so you need to apply an app, setup callback url.

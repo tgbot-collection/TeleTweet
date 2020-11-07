@@ -14,7 +14,7 @@ import telebot
 from config import BOT_TOKEN, tweet_format
 from helper import can_use, sign_in, init_enc, sign_off, is_sign_in
 from tgbot_ping import get_runtime
-from tweet import send_tweet, get_me
+from tweet import *
 
 bot = telebot.TeleBot(BOT_TOKEN)
 init_enc()
@@ -39,13 +39,7 @@ def sign_in_handler(message):
     msg = 'Click this [link](https://teletweet.app) to login in you twitter.' \
           ' When your login in is done, send auth code back to me'
     bot.send_message(message.chat.id, msg, parse_mode='markdown')
-    bot.register_next_step_handler(message, add_auth)
-
-
-def add_auth(message):
-    bot.send_chat_action(message.chat.id, 'typing')
-    msg = sign_in(str(message.chat.id), message.text)
-    bot.send_message(message.chat.id, msg, parse_mode='markdown')
+    bot.register_next_step_handler(message, __add_auth)
 
 
 @bot.message_handler(commands=['sign_off'])
@@ -73,6 +67,22 @@ def help_handler(message):
     userinfo = get_me(message.chat.id) + "\n\n"
     info = get_runtime("botsrunner_teletweet_1")
     bot.send_message(message.chat.id, userinfo + info, parse_mode="markdown", disable_web_page_preview=True)
+
+
+@bot.message_handler(commands=['delete'])
+def delete_handler(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    if not message.reply_to_message:
+        bot.send_message(message.chat.id, "Reply to some message and delete.")
+        return
+    result = delete_tweet(message)
+    if result.get("error"):
+        resp = f"❌ Error: `{result['error']}`"
+        bot.reply_to(message, resp, parse_mode="markdown")
+    else:
+        resp = f"🗑 Your tweet `{result['text']}` has been deleted.\n"
+        bot.edit_message_text(resp, message.chat.id, message.reply_to_message.message_id, parse_mode='markdown')
+        # bot.delete_message(message.chat.id,message.reply_to_message.message_id)
 
 
 @bot.message_handler()
@@ -122,6 +132,12 @@ def tweet_photo_handler(message):
         url = tweet_format.format(screen_name=result["user"]["screen_name"], id=result['id'])
         resp = f"✅ Your [tweet]({url}) has been sent.\n"
     bot.reply_to(message, resp, parse_mode="markdown")
+
+
+def __add_auth(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    msg = sign_in(str(message.chat.id), message.text)
+    bot.send_message(message.chat.id, msg, parse_mode='markdown')
 
 
 if __name__ == '__main__':
