@@ -93,7 +93,8 @@ def __get_tweet_id_from_reply(message) -> int:
 
 def __get_tweet_id_from_url(url) -> int:
     try:
-        tweet_id = re.findall(r"\d+", url)[0]
+        # https://twitter.com/williamwoo7/status/1326147700425809921?s=20
+        tweet_id = re.findall(r"https://twitter\.com/.+/status/(\d+)", url)[0]
     except IndexError:
         tweet_id = None
     return tweet_id
@@ -116,6 +117,7 @@ def download_video_from_id(chat_id, tweet_id):
 def is_video_tweet(chat_id, text) -> str:
     # will return an id
     tweet_id = __get_tweet_id_from_url(text)
+    logging.info("tweet id is %s", tweet_id)
     result = ""
     try:
         api = __connect_twitter(decrypt_to_auth(chat_id))
@@ -152,3 +154,8 @@ def __download_from_url(url) -> dict:
     with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as video_file:
         video_file.write(r.content)
     return {"file": video_file, "url": url}
+
+
+if __name__ == '__main__':
+    print(__get_tweet_id_from_url("https://twitter.com/williamwoo7/status/1326147700425809921?s=20"))
+    print(__get_tweet_id_from_url("https://twitter.com/nixcraft/status/1326077772117078018?s=09"))
