@@ -10,9 +10,10 @@ __author__ = "Benny <benny.think@gmail.com>"
 import traceback
 import logging
 import re
+import tempfile
 
 import twitter
-
+import requests
 from config import CONSUMER_KEY, CONSUMER_SECRET
 from helper import decrypt_to_auth
 
@@ -33,7 +34,7 @@ def send_tweet(message, pic=None) -> dict:
     chat_id = message.chat.id
     text = message.text or message.caption
 
-    tweet_id = __get_tweet_id(message)
+    tweet_id = __get_tweet_id_from_reply(message)
     try:
         api = __connect_twitter(decrypt_to_auth(chat_id))
         logging.info("Tweeting...")
@@ -64,7 +65,7 @@ def get_me(chat_id) -> str:
 def delete_tweet(message) -> dict:
     logging.info("Deleting tweet for someone...")
     chat_id = message.chat.id
-    tweet_id = __get_tweet_id(message)
+    tweet_id = __get_tweet_id_from_reply(message)
     if not tweet_id:
         return {"error": "Which tweet do you want to delete? This does not seem like a valid tweet message."}
 
@@ -80,17 +81,74 @@ def delete_tweet(message) -> dict:
     return response
 
 
-def __get_tweet_id(message) -> int:
+def __get_tweet_id_from_reply(message) -> int:
     reply_to = message.reply_to_message
     if reply_to:
-        tweet_id = re.findall(r"\d+", reply_to.html_text)
+        tweet_id = __get_tweet_id_from_url(reply_to.html_text)
     else:
         tweet_id = None
-    if tweet_id:
-        tweet_id = int(tweet_id[0])
     logging.info("Replying to %s", tweet_id)
     return tweet_id
 
 
-if __name__ == '__main__':
-    get_me("260260121")
+def __get_tweet_id_from_url(url) -> int:
+    try:
+        tweet_id = re.findall(r"\d+", url)[0]
+    except IndexError:
+        tweet_id = None
+    return tweet_id
+
+
+def download_video_from_id(chat_id, tweet_id):
+    try:
+        api = __connect_twitter(decrypt_to_auth(chat_id))
+        logging.info("Getting video tweets......")
+        status = api.GetStatus(tweet_id)
+        url = __get_video_url(status.AsDict())
+        response = __download_from_url(url)
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        response = {"error": str(e)}
+
+    return response
+
+
+def is_video_tweet(chat_id, text) -> str:
+    # will return an id
+    tweet_id = __get_tweet_id_from_url(text)
+    result = ""
+    try:
+        api = __connect_twitter(decrypt_to_auth(chat_id))
+        logging.info("Getting video tweets......")
+        status = api.GetStatus(tweet_id)
+        url = __get_video_url(status.AsDict())
+        if url:
+            result = tweet_id
+    except Exception:
+        logging.error(traceback.format_exc())
+
+    return result
+
+
+def __get_video_url(json_dict: dict) -> str:
+    logging.info("Downloading video...")
+    # video/gif is the first one. photo could be four
+    media = json_dict.get("media")
+    if media:
+        media = media[0]
+        if media["type"] == "video":
+            variants = media["video_info"]["variants"]
+            rates = [i.get('bitrate', 0) for i in variants]
+            index = rates.index(max(rates))
+            url = variants[index]["url"]
+            logging.info("Real download url found.")
+            return url
+
+
+def __download_from_url(url) -> dict:
+    logging.info("Downloading %s ...", url)
+    r = requests.get(url, stream=True)
+    logging.info("Download complete")
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as video_file:
+        video_file.write(r.content)
+    return {"file": video_file, "url": url}
