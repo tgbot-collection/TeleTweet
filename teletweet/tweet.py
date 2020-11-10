@@ -54,7 +54,7 @@ def get_me(chat_id) -> str:
         api = __connect_twitter(decrypt_to_auth(chat_id))
         name = api.VerifyCredentials().name
         user_id = api.VerifyCredentials().screen_name
-        response = f"Hello👋 [{name}](https://twitter.com/{user_id})"
+        response = f"[{name}](https://twitter.com/{user_id})"
     except Exception as e:
         logging.error(traceback.format_exc())
         response = {"error": str(e)}

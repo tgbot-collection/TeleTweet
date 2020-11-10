@@ -9,6 +9,7 @@ __author__ = "Benny <benny.think@gmail.com>"
 
 import tempfile
 import os
+
 import telebot
 
 from telebot import types
@@ -26,8 +27,8 @@ init_enc()
 def start_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     msg = 'Welcome to TeleTweet. ' \
-          'This bot will connect you from Telegram Bot to Twitter.' \
-          'Wanna get started now? Type /sign_in now!'
+          'This bot will connect you from Telegram Bot to Twitter. ' \
+          'Want to get started now? Type /sign_in now!'
     bot.send_message(message.chat.id, msg)
 
 
@@ -100,7 +101,12 @@ def video_callback(call):
 @bot.message_handler(commands=['ping'])
 def help_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    userinfo = get_me(message.chat.id) + "\n\n"
+
+    try:
+        userinfo = "Hello👋 " + get_me(message.chat.id) + "\n\n"
+    except TypeError:
+        userinfo = "Hello👋 unknown user! Want to `/sign_in` now?\n\n"
+
     info = get_runtime("botsrunner_teletweet_1")
     bot.send_message(message.chat.id, userinfo + info, parse_mode="markdown", disable_web_page_preview=True)
 
