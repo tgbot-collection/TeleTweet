@@ -26,6 +26,9 @@ init_enc()
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
+    if is_sign_in(message.chat.id):
+        bot.send_message(message.chat.id, "Start by sending me a message?")
+        return
     msg = 'Welcome to TeleTweet. ' \
           'This bot will connect you from Telegram Bot to Twitter. ' \
           'Want to get started now? Type /sign_in now!'
