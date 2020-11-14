@@ -14,6 +14,9 @@ import tempfile
 
 import twitter
 import requests
+from twitter.twitter_utils import calc_expected_status_length
+from twitter.api import CHARACTER_LIMIT
+
 from config import CONSUMER_KEY, CONSUMER_SECRET
 from helper import decrypt_to_auth
 
@@ -103,6 +106,7 @@ def __get_tweet_id_from_url(url) -> int:
 def download_video_from_id(chat_id, tweet_id):
     try:
         api = __connect_twitter(decrypt_to_auth(chat_id))
+
         logging.info("Getting video tweets......")
         status = api.GetStatus(tweet_id)
         url = __get_video_url(status.AsDict())
@@ -154,6 +158,11 @@ def __download_from_url(url) -> dict:
     with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as video_file:
         video_file.write(r.content)
     return {"file": video_file, "url": url}
+
+
+def remain_char(tweet: str) -> str:
+    length = calc_expected_status_length(tweet)
+    return f"{length}/{CHARACTER_LIMIT}. Click this message to tweet."
 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ All the following features rely on authorized users.
 * reply bot tweet message to add more tweets to this thread
 * reply `/delete` to delete tweet
 * send any video tweet to download the video
+* inline character calculation
 
 # Commands
 ```
@@ -63,6 +64,17 @@ it will ask what do you want to do with it:
 Depending on your choice, this bot will download this video or retweet.
 
 ![](assets/video_choice.png)
+
+## Inline mode
+Use `@tele_tweetbot` within TeleTweet bot chat to see character limit in case you exceed it.
+
+Once you have compose your tweet, hit the message to send you tweet.
+
+![](assets/inline1.png)
+
+![](assets/inline2.png)
+
+**Be aware: using inline mode in other chat won't send tweet for you.** 
 
 # General deployment
 This bot use oauth, so you need to apply an app, setup callback url.

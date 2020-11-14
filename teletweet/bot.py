@@ -17,7 +17,8 @@ from tgbot_ping import get_runtime
 
 from config import BOT_TOKEN, tweet_format
 from helper import can_use, sign_in, init_enc, sign_off, is_sign_in
-from tweet import send_tweet, get_me, delete_tweet, download_video_from_id, is_video_tweet
+from tweet import (send_tweet, get_me, delete_tweet,
+                   download_video_from_id, is_video_tweet, remain_char)
 
 bot = telebot.TeleBot(BOT_TOKEN)
 init_enc()
@@ -194,6 +195,16 @@ def __add_auth(message):
     bot.send_chat_action(message.chat.id, 'typing')
     msg = sign_in(str(message.chat.id), message.text)
     bot.send_message(message.chat.id, msg, parse_mode='markdown')
+
+
+@bot.inline_handler(lambda query: True)
+def query_text(inline_query):
+    try:
+        usage = remain_char(inline_query.query)
+        r = types.InlineQueryResultArticle('1', usage, types.InputTextMessageContent(inline_query.query))
+        bot.answer_inline_query(inline_query.id, [r])
+    except Exception as e:
+        print(e)
 
 
 if __name__ == '__main__':
