@@ -159,7 +159,7 @@ def tweet_text_handler(message):
     bot.reply_to(message, resp, parse_mode="markdown")
 
 
-@bot.message_handler(content_types=['photo', 'document'])
+@bot.message_handler(content_types=['photo', 'document','video'])
 def tweet_photo_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     if not can_use(message.chat.id):
@@ -172,6 +172,8 @@ def tweet_photo_handler(message):
 
     if message.photo:
         file_id = message.photo[-1].file_id
+    elif message.video:
+        file_id = message.video.file_id
     else:
         file_id = message.document.file_id
 
