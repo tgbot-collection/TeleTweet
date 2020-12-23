@@ -8,4 +8,4 @@ ENV TZ=Asia/Shanghai
 
 WORKDIR /TeleTweet/teletweet
 
-CMD python3 bot.py
+CMD ["python", "bot.py"]
