@@ -36,7 +36,8 @@ def send_tweet(message, pic=None) -> dict:
     logging.info("Preparing tweet for someone...")
     chat_id = message.chat.id
     text = message.text or message.caption
-
+    if not text:
+        text = ""
     tweet_id = __get_tweet_id_from_reply(message)
     try:
         api = __connect_twitter(decrypt_to_auth(chat_id))
