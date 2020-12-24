@@ -78,11 +78,11 @@ Once you have compose your tweet, hit the message to send you tweet.
 **Be aware: using inline mode in another chat won't send tweet for you.** 
 
 ## multiple photo mode
-** Group feature requires a newer version of Telegram **
+**Group feature requires a newer version of Telegram**
 Just send a group of photos, add some captions if you want to, and hit send.
 ![](assets/multi_photo.jpg)
 
-** Warning: if you send more than four photos in a group, this bot will only send first four photos in a tweet **
+**Warning: if you send more than four photos in a group, this bot will only send first four photos in a tweet**
 
 
 # General deployment
