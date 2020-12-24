@@ -1,8 +1,9 @@
 FROM python:alpine
 
-RUN apk update && apk add git alpine-sdk tzdata libressl-dev libffi-dev --no-cache&& \
-git clone https://github.com/tgbot-collection/TeleTweet && \
-pip3 install --no-cache-dir -r /TeleTweet/requirements.txt
+RUN apk update && apk add  --no-cache alpine-sdk tzdata libressl-dev libffi-dev
+ADD requirements.txt /tmp/
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
+COPY . /TeleTweet
 
 ENV TZ=Asia/Shanghai
 
