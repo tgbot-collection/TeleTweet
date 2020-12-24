@@ -9,19 +9,25 @@ __author__ = "Benny <benny.think@gmail.com>"
 
 import tempfile
 import os
+import logging
 
+from threading import Lock
 import telebot
 
 from telebot import types
 from tgbot_ping import get_runtime
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from config import BOT_TOKEN, tweet_format
 from helper import can_use, sign_in, init_enc, sign_off, is_sign_in
 from tweet import (send_tweet, get_me, delete_tweet,
                    download_video_from_id, is_video_tweet, remain_char)
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
+media_group = {}
 bot = telebot.TeleBot(BOT_TOKEN)
 init_enc()
+lock = Lock()
 
 
 @bot.message_handler(commands=['start'])
@@ -148,42 +154,59 @@ def tweet_text_handler(message):
         bot.reply_to(message, "Do you want to download video or just tweet this?", reply_markup=markup)
         return
 
-    result = send_tweet(message)
-
-    if result.get("error"):
-        resp = f"❌ Error: `{result['error']}`"
-    else:
-        url = tweet_format.format(screen_name=result["user"]["screen_name"], id=result['id'])
-        resp = f"✅ Your [tweet]({url}) has been sent.\n"
-
-    bot.reply_to(message, resp, parse_mode="markdown")
+    send_tweet_entrance(message)
 
 
-@bot.message_handler(content_types=['photo', 'document','video'])
+@bot.message_handler(content_types=['photo', 'document', 'video'])
 def tweet_photo_handler(message):
-    bot.send_chat_action(message.chat.id, 'typing')
     if not can_use(message.chat.id):
+        logging.warning("Invalid user %d", message.chat.id)
+        bot.send_chat_action(message.chat.id, 'typing')
         bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
         return
 
-    if message.media_group_id:
-        bot.send_message(message.chat.id, "I don't support media group yet.")
-        return
-
-    if message.photo:
-        file_id = message.photo[-1].file_id
-    elif message.video:
-        file_id = message.video.file_id
-    else:
-        file_id = message.document.file_id
-
     bot.send_chat_action(message.chat.id, 'upload_photo')
-    file_info = bot.get_file(file_id)
-    content = bot.download_file(file_info.file_path)
+    if message.media_group_id:
+        logging.info("Media group %s received", message.media_group_id)
+        with lock:
+            # we need a background to periodically check this structure
+            # shouldn't download here because download is slow and it will exceeds 5 seconds
+            fid = get_file_id(message)
+            key = f"{message.chat.id}/{message.media_group_id}"
+            pre_value = media_group.get(key)
+            if pre_value:
+                pre_value["file_id_list"].append(fid)
+                if message.caption:
+                    pre_value["caption"] = message.caption
+                    pre_value['timeout'] += 1
+            else:
+                # bot.send_message(message.chat.id, "Hang on, this might take a few seconds")
+                cur_value = {
+                    "message": message,
+                    "caption": message.caption,
+                    "file_id_list": [fid],
+                    "timeout": 6
+                }
+                media_group[key] = cur_value
+    else:
+        # for one photo/video/document
+        logging.info("Normal one media message")
 
-    with tempfile.NamedTemporaryFile() as temp:
-        temp.write(content)
-        result = send_tweet(message, [temp])
+        file_obj = download_file_from_msg(message)
+        send_tweet_entrance(message, file_obj)
+
+
+def send_tweet_entrance(message, file=None):
+    if file is None:
+        # normal text tweet
+        result = send_tweet(message)
+    elif isinstance(file, list):
+        result = send_tweet(message, file)
+        [f.close() for f in file]
+    else:
+        # one image message, file object
+        result = send_tweet(message, [file])
+        file.close()
 
     if result.get("error"):
         resp = f"❌ Error: `{result['error']}`"
@@ -191,6 +214,37 @@ def tweet_photo_handler(message):
         url = tweet_format.format(screen_name=result["user"]["screen_name"], id=result['id'])
         resp = f"✅ Your [tweet]({url}) has been sent.\n"
     bot.reply_to(message, resp, parse_mode="markdown")
+
+
+def download_file_from_msg(message):
+    file_id = get_file_id(message)
+    return download_file_from_id(file_id)
+
+
+def download_file_from_id(file_id):
+    file_info = bot.get_file(file_id)
+    content = bot.download_file(file_info.file_path)
+
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp.write(content)
+    return temp
+
+
+def get_file_id(message) -> str:
+    if message.photo:
+        object_type = "photo"
+    elif message.video:
+        object_type = "video"
+    elif message.document:
+        object_type = "document"
+    else:
+        object_type = ""
+
+    try:
+        file_id = getattr(message, object_type)[-1].file_id
+    except Exception:
+        file_id = getattr(message, object_type).file_id
+    return file_id
 
 
 def __add_auth(message):
@@ -206,10 +260,31 @@ def query_text(inline_query):
         r = types.InlineQueryResultArticle('1', usage, types.InputTextMessageContent(inline_query.query))
         bot.answer_inline_query(inline_query.id, [r])
     except Exception as e:
-        print(e)
+        logging.error(e)
+
+
+def multi_photo_checker():
+    # full with 4 or timeout is 0
+    logging.info("Multi photo checker started with %d job(s)", len(media_group))
+    for unique, data in list(media_group.items()):
+        if data['timeout'] <= 0 or len(data["file_id_list"]) >= 4:
+            logging.info("Set %s is ready, sending now...", unique)
+            data['message'].text = data['caption']
+            f_obj_list = [download_file_from_id(fid) for fid in data["file_id_list"][:4]]
+            send_tweet_entrance(data['message'], f_obj_list)
+            # delete media_group
+            media_group.pop(unique)
+        else:
+            logging.info("Set %s with %d photo(s) is losing time %d", unique, len(data["file_id_list"]),
+                         data['timeout'])
+            data['timeout'] -= 5
 
 
 if __name__ == '__main__':
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(multi_photo_checker, 'interval', seconds=5)
+    scheduler.start()
+
     banner = """
 ▀▛▘  ▜     ▀▛▘         ▐
  ▌▞▀▖▐ ▞▀▖  ▌▌  ▌▞▀▖▞▀▖▜▀

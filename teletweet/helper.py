@@ -106,3 +106,5 @@ def decrypt_to_auth(chat_id) -> dict:
     logging.info("Decrypting user auth data...")
     data: dict = json.loads(decrypt(read_file()))
     return data[str(chat_id)]
+
+
