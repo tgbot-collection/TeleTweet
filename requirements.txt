@@ -1,6 +1,8 @@
 pytelegrambotapi
 python-twitter
 # git+https://github.com/tgbot-collection/python-twitter
+oauth2
+tornado
 cryptography
 requests
 tgbot-ping

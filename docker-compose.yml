@@ -1,0 +1,16 @@
+version: '3.1'
+
+services:
+  bot:
+    image: bennythink/teletweet
+    restart: on-failure
+    volumes:
+      - ./data/teletweet.enc:/TeleTweet/teletweet/database.enc
+    env_file:
+      - env/teletweet.env
+
+  web:
+    image: bennythink/teletweet
+    restart: always
+    env_file:
+      - env/teletweet.env
