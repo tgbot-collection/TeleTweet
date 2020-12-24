@@ -11,6 +11,7 @@ All the following features rely on authorized users.
 * reply `/delete` to delete tweet
 * send any video tweet to download the video
 * inline character calculation
+* send pictures as a group, it will result in multiple photos in your tweet(max photo restrictions is 4)
 
 # Commands
 ```
@@ -74,7 +75,15 @@ Once you have compose your tweet, hit the message to send you tweet.
 
 ![](assets/inline2.png)
 
-**Be aware: using inline mode in other chat won't send tweet for you.** 
+**Be aware: using inline mode in another chat won't send tweet for you.** 
+
+## multiple photo mode
+** Group feature requires a newer version of Telegram **
+Just send a group of photos, add some captions if you want to, and hit send.
+![](assets/multi_photo.jpg)
+
+** Warning: if you send more than four photos in a group, this bot will only send first four photos in a tweet **
+
 
 # General deployment
 This bot use oauth, so you need to apply an app, setup callback url.
@@ -103,7 +112,7 @@ python3 twauth.py
 ```
 
 # Docker
-You can run using docker.
+You can run/develop using docker.
 ```shell script
 docker run -d --restart=always -e TOKEN="BOT_TOKEN" \
 -e CONSUMER_KEY="key" -e CONSUMER_SECRET="secret" \
@@ -120,6 +129,7 @@ bennythink/teletweet python3 /TeleTweet/twauth-web/twuath.py
 - [x] help
 - [x] about
 - [x] start
+- [x] multi photo
 - [ ] timeline
 - [ ] new
 - [ ] like
