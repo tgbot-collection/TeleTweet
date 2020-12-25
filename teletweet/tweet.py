@@ -18,7 +18,7 @@ from twitter.twitter_utils import calc_expected_status_length
 from twitter.api import CHARACTER_LIMIT
 
 from config import CONSUMER_KEY, CONSUMER_SECRET
-from helper import decrypt_to_auth
+from crypto import decrypt_to_auth
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 

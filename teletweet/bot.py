@@ -7,21 +7,19 @@
 
 __author__ = "Benny <benny.think@gmail.com>"
 
-import tempfile
 import os
+import tempfile
 import logging
-
 from threading import Lock
-import telebot
 
+import telebot
 from telebot import types
 from tgbot_ping import get_runtime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from config import BOT_TOKEN, tweet_format
-from helper import can_use, sign_in, init_enc, sign_off, is_sign_in
-from tweet import (send_tweet, get_me, delete_tweet,
-                   download_video_from_id, is_video_tweet, remain_char)
+from crypto import can_use, sign_in, init_enc, sign_off, is_sign_in
+from tweet import get_me, delete_tweet, download_video_from_id, is_video_tweet, remain_char, send_tweet
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 media_group = {}
@@ -52,7 +50,7 @@ def sign_in_handler(message):
     msg = 'Click this [link](https://teletweet.app) to login in you twitter.' \
           ' When your login in is done, send auth code back to me'
     bot.send_message(message.chat.id, msg, parse_mode='markdown')
-    bot.register_next_step_handler(message, __add_auth)
+    bot.register_next_step_handler(message, next_step_add_auth)
 
 
 @bot.message_handler(commands=['sign_off'])
@@ -72,40 +70,6 @@ def sign_off_handler(message):
 def help_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     bot.send_message(message.chat.id, 'Author: @BennyThink\nGitHub: https://github.com/tgbot-collection/TeleTweet')
-
-
-@bot.callback_query_handler(func=lambda call: True)
-def video_callback(call):
-    # why we use send document instead of video url?
-    # Telegram will download and send the file.
-    # 5 MB max size for photos and 20 MB max for other types of content.
-    if call.data == "tweet":
-        setattr(call.message.reply_to_message, "force", True)
-        # call.message - > current bot message?
-        tweet_text_handler(call.message.reply_to_message)
-    else:
-        chat_id = call.message.chat.id
-        message = call.message
-        bot.send_chat_action(call.message.chat.id, 'typing')
-        bot.answer_callback_query(call.id, "Sure, wait a second.")
-        file_info = download_video_from_id(chat_id, call.data)
-        if file_info.get("error"):
-            # resp, message.chat.id, message.reply_to_message.message_id
-            bot.edit_message_text(f"❌ Error: `{file_info['error']}`", chat_id, message.message_id,
-                                  parse_mode="markdown")
-            return
-
-        file = file_info.get("file")
-        url = file_info.get("url")
-        if os.path.getsize(file.name) > 1 * 1024 * 1024 * 50:
-            bot.edit_message_text(f"The video file is too big. I'll send you url instead\n{url}", chat_id,
-                                  message.message_id)
-        else:
-            bot.send_chat_action(chat_id, 'upload_document')
-            with open(file.name, "rb") as f:
-                bot.send_document(chat_id, f)
-            file.close()
-            bot.delete_message(message.chat.id, message.message_id)
 
 
 @bot.message_handler(commands=['ping'])
@@ -196,6 +160,56 @@ def tweet_photo_handler(message):
         send_tweet_entrance(message, file_obj)
 
 
+@bot.callback_query_handler(func=lambda call: True)
+def video_callback(call):
+    # why we use send document instead of video url?
+    # Telegram will download and send the file.
+    # 5 MB max size for photos and 20 MB max for other types of content.
+    if call.data == "tweet":
+        setattr(call.message.reply_to_message, "force", True)
+        # call.message - > current bot message?
+        tweet_text_handler(call.message.reply_to_message)
+    else:
+        chat_id = call.message.chat.id
+        message = call.message
+        bot.send_chat_action(call.message.chat.id, 'typing')
+        bot.answer_callback_query(call.id, "Sure, wait a second.")
+        file_info = download_video_from_id(chat_id, call.data)
+        if file_info.get("error"):
+            # resp, message.chat.id, message.reply_to_message.message_id
+            bot.edit_message_text(f"❌ Error: `{file_info['error']}`", chat_id, message.message_id,
+                                  parse_mode="markdown")
+            return
+
+        file = file_info.get("file")
+        url = file_info.get("url")
+        if os.path.getsize(file.name) > 1 * 1024 * 1024 * 50:
+            bot.edit_message_text(f"The video file is too big. I'll send you url instead\n{url}", chat_id,
+                                  message.message_id)
+        else:
+            bot.send_chat_action(chat_id, 'upload_document')
+            with open(file.name, "rb") as f:
+                bot.send_document(chat_id, f)
+            file.close()
+            bot.delete_message(message.chat.id, message.message_id)
+
+
+@bot.inline_handler(lambda query: True)
+def query_text(inline_query):
+    try:
+        usage = remain_char(inline_query.query)
+        r = types.InlineQueryResultArticle('1', usage, types.InputTextMessageContent(inline_query.query))
+        bot.answer_inline_query(inline_query.id, [r])
+    except Exception as e:
+        logging.error(e)
+
+
+def next_step_add_auth(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    msg = sign_in(str(message.chat.id), message.text)
+    bot.send_message(message.chat.id, msg, parse_mode='markdown')
+
+
 def send_tweet_entrance(message, file=None):
     if file is None:
         # normal text tweet
@@ -245,22 +259,6 @@ def get_file_id(message) -> str:
     except Exception:
         file_id = getattr(message, object_type).file_id
     return file_id
-
-
-def __add_auth(message):
-    bot.send_chat_action(message.chat.id, 'typing')
-    msg = sign_in(str(message.chat.id), message.text)
-    bot.send_message(message.chat.id, msg, parse_mode='markdown')
-
-
-@bot.inline_handler(lambda query: True)
-def query_text(inline_query):
-    try:
-        usage = remain_char(inline_query.query)
-        r = types.InlineQueryResultArticle('1', usage, types.InputTextMessageContent(inline_query.query))
-        bot.answer_inline_query(inline_query.id, [r])
-    except Exception as e:
-        logging.error(e)
 
 
 def multi_photo_checker():
