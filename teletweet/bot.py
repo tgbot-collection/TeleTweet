@@ -22,6 +22,7 @@ from crypto import can_use, sign_in, init_enc, sign_off, is_sign_in
 from tweet import get_me, delete_tweet, download_video_from_id, is_video_tweet, remain_char, send_tweet
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
+logging.getLogger('apscheduler.executors.default').propagate = False
 media_group = {}
 bot = telebot.TeleBot(BOT_TOKEN)
 init_enc()
@@ -263,7 +264,7 @@ def get_file_id(message) -> str:
 
 def multi_photo_checker():
     # full with 4 or timeout is 0
-    logging.info("Multi photo checker started with %d job(s)", len(media_group))
+    logging.debug("Multi photo checker started with %d job(s)", len(media_group))
     for unique, data in list(media_group.items()):
         if data['timeout'] <= 0 or len(data["file_id_list"]) >= 4:
             logging.info("Set %s is ready, sending now...", unique)
@@ -292,4 +293,4 @@ if __name__ == '__main__':
     """
     print(f"\033[1;35m {banner}\033[0m")
     print("\033[1;36mTeletweet is running...\033[0m")
-    bot.polling(none_stop=True)
+    bot.polling()
