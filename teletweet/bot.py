@@ -159,6 +159,8 @@ def tweet_photo_handler(message):
 
         file_obj = download_file_from_msg(message)
         send_tweet_entrance(message, file_obj)
+        file_obj.close()
+        os.remove(file_obj.name)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -191,8 +193,10 @@ def video_callback(call):
             bot.send_chat_action(chat_id, 'upload_document')
             with open(file.name, "rb") as f:
                 bot.send_document(chat_id, f)
-            file.close()
             bot.delete_message(message.chat.id, message.message_id)
+
+        file.close()
+        os.remove(file.name)
 
 
 @bot.inline_handler(lambda query: True)
