@@ -7,3 +7,4 @@ cryptography
 requests
 tgbot-ping
 apscheduler
+filetype

@@ -11,7 +11,8 @@ import traceback
 import logging
 import re
 import tempfile
-
+import filetype
+import time
 import twitter
 import requests
 from twitter.twitter_utils import calc_expected_status_length
@@ -23,13 +24,50 @@ from crypto import decrypt_to_auth
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 
 
+class NewApi(twitter.Api):
+    def PostUpdate(self,
+                   status,
+                   media=None,
+                   media_additional_owners=None,
+                   media_category=None,
+                   in_reply_to_status_id=None,
+                   auto_populate_reply_metadata=False,
+                   exclude_reply_user_ids=None,
+                   latitude=None,
+                   longitude=None,
+                   place_id=None,
+                   display_coordinates=False,
+                   trim_user=False,
+                   verify_status_length=True,
+                   attachment_url=None):
+        # if this is [file], single photo or media
+        if media and len(media) == 1:
+            media_type = filetype.guess_mime(media[0].name)
+            if media_type and "video" in media_type:
+                logging.info("long video")
+                video_id = self.UploadMediaChunked(media=media[0], media_category='tweet_video')
+                logging.info("video id is %s,status is %s", video_id, status)
+                time.sleep(10)  # Waits until the async processing of the uploaded media finishes and `video_id` becomes valid.
+
+                status = super(NewApi, self).PostUpdate(status=status, media=video_id,
+                                                        in_reply_to_status_id=in_reply_to_status_id)
+                return status
+
+        return super(NewApi, self).PostUpdate(status,
+                                              media, media_additional_owners, media_category,
+                                              in_reply_to_status_id, auto_populate_reply_metadata,
+                                              exclude_reply_user_ids,  latitude, longitude,
+                                              place_id, display_coordinates, trim_user, verify_status_length,
+                                              attachment_url)
+
+
 def __connect_twitter(auth_data: dict):
     logging.info("Connecting to twitter api...")
-    return twitter.Api(consumer_key=CONSUMER_KEY,
-                       consumer_secret=CONSUMER_SECRET,
-                       access_token_key=auth_data['ACCESS_KEY'],
-                       access_token_secret=auth_data['ACCESS_SECRET'],
-                       sleep_on_rate_limit=True)
+    return NewApi(consumer_key=CONSUMER_KEY,
+                  consumer_secret=CONSUMER_SECRET,
+                  access_token_key=auth_data['ACCESS_KEY'],
+                  access_token_secret=auth_data['ACCESS_SECRET'],
+                  sleep_on_rate_limit=True)
 
 
 def send_tweet(message, pic=None) -> dict:
@@ -132,7 +170,7 @@ def is_video_tweet(chat_id, text) -> str:
         if url:
             result = tweet_id
     except Exception:
-        logging.error(traceback.format_exc())
+        logging.warning(traceback.format_exc())
 
     return result
 
