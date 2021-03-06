@@ -170,7 +170,7 @@ def is_video_tweet(chat_id, text) -> str:
         if url:
             result = tweet_id
     except Exception:
-        logging.warning(traceback.format_exc())
+        logging.debug(traceback.format_exc())
 
     return result
 

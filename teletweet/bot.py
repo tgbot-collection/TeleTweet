@@ -10,14 +10,18 @@ __author__ = "Benny <benny.think@gmail.com>"
 import os
 import tempfile
 import logging
+import copy
+import re
 from threading import Lock
 
 import telebot
 from telebot import types
 from tgbot_ping import get_runtime
 from apscheduler.schedulers.background import BackgroundScheduler
+from twitter.twitter_utils import calc_expected_status_length
+from twitter.api import CHARACTER_LIMIT
 
-from config import BOT_TOKEN, tweet_format
+from config import BOT_TOKEN, tweet_format, reply_json
 from crypto import can_use, sign_in, init_enc, sign_off, is_sign_in
 from tweet import get_me, delete_tweet, download_video_from_id, is_video_tweet, remain_char, send_tweet
 
@@ -217,8 +221,36 @@ def next_step_add_auth(message):
 
 def send_tweet_entrance(message, file=None):
     if file is None:
-        # normal text tweet
-        result = send_tweet(message)
+        # normal text tweet, could be too long
+        text = message.text
+        if calc_expected_status_length(text) > CHARACTER_LIMIT:
+            # pre calculation
+            is_long = False
+            for part in re.split(r"\n+", message.text):
+                if calc_expected_status_length(part) > CHARACTER_LIMIT:
+                    logging.warning("%s chars for thread tweet!", calc_expected_status_length(part))
+                    bot.reply_to(message, f"`{part}` is too long", parse_mode="markdown")
+                    is_long = True
+            if is_long:
+                return
+            # normal process
+            url = ""
+            first_thread = []
+            for part in re.split(r"\n+", message.text):
+                new_message = copy.copy(message)
+                if url:
+                    replied = types.Message.de_json(reply_json % url)
+                    setattr(new_message, "reply_to_message", replied)
+
+                new_message.text = part
+                result = send_tweet(new_message)
+                first_thread.append(result)
+                url = tweet_format.format(screen_name="abc", id=result["id"])
+            # send response
+            send_tweet_message(first_thread[0], message)
+            return
+        else:
+            result = send_tweet(message)
     elif isinstance(file, list):
         result = send_tweet(message, file)
         [f.close() for f in file]
@@ -227,6 +259,10 @@ def send_tweet_entrance(message, file=None):
         result = send_tweet(message, [file])
         file.close()
 
+    send_tweet_message(result, message)
+
+
+def send_tweet_message(result, message):
     if result.get("error"):
         resp = f"❌ Error: `{result['error']}`"
     else:

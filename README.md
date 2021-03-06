@@ -84,6 +84,20 @@ Just send a group of photos, add some captions if you want to, and hit send.
 
 **Warning: if you send more than four photos in a group, this bot will only send first four photos in a tweet**
 
+## threaded-tweets
+Twitter has max character limit of 280. If you want to send tweet more than this limit, you need to manually add new lines.
+
+For example, one or more blank line is acceptable.
+```
+Dear developer, I was using teletweet for just few days and it made me so much curious and I stumble upon many things , that it should do more, so here I will just saying what can help me little,
+
+Issue- Error: Text must be less than or equal to CHARACTER_LIMIT characters.
+
+Need- when bot hit the wall of character limit, can this be possible that line break (Enter bottom) command can be used to split the
+text into threading tweet, only when text limit breached from current tweet.
+```
+And the result would be
+![](assets/auto_thread.png)
 
 # General deployment
 This bot use oauth, so you need to apply an app, setup callback url.
