@@ -1,6 +1,6 @@
 FROM python:alpine as builder
 
-RUN apk update && apk add  --no-cache  alpine-sdk tzdata libressl-dev libffi-dev
+RUN apk update && apk add  --no-cache  alpine-sdk tzdata libressl-dev libffi-dev cargo
 ADD requirements.txt /tmp/
 RUN pip3 install --user -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
