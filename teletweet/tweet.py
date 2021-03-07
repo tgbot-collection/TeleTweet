@@ -17,7 +17,7 @@ import twitter
 import requests
 from twitter.twitter_utils import calc_expected_status_length
 from twitter.api import CHARACTER_LIMIT
-
+from twitter.error import TwitterError
 from config import CONSUMER_KEY, CONSUMER_SECRET
 from crypto import decrypt_to_auth
 
@@ -44,19 +44,29 @@ class NewApi(twitter.Api):
         if media and len(media) == 1:
             media_type = filetype.guess_mime(media[0].name)
             if media_type and "video" in media_type:
-                logging.info("long video")
-                video_id = self.UploadMediaChunked(media=media[0], media_category='tweet_video')
-                logging.info("video id is %s,status is %s", video_id, status)
-                time.sleep(10)  # Waits until the async processing of the uploaded media finishes and `video_id` becomes valid.
-
-                status = super(NewApi, self).PostUpdate(status=status, media=video_id,
-                                                        in_reply_to_status_id=in_reply_to_status_id)
-                return status
+                # we'll first try the ordinary one, if that fails, execute new method in exception
+                try:
+                    return super(NewApi, self).PostUpdate(status,
+                                                          media, media_additional_owners, media_category,
+                                                          in_reply_to_status_id, auto_populate_reply_metadata,
+                                                          exclude_reply_user_ids, latitude, longitude,
+                                                          place_id, display_coordinates, trim_user,
+                                                          verify_status_length,
+                                                          attachment_url)
+                except TwitterError:
+                    logging.warning("long video perhaps")
+                    video_id = self.UploadMediaChunked(media=media[0], media_category='tweet_video')
+                    logging.info("video id is %s,status is %s", video_id, status)
+                    time.sleep(20)
+                    # Waits until the async processing of the uploaded media finishes and `video_id` becomes valid.
+                    status = super(NewApi, self).PostUpdate(status=status, media=video_id,
+                                                            in_reply_to_status_id=in_reply_to_status_id)
+                    return status
 
         return super(NewApi, self).PostUpdate(status,
                                               media, media_additional_owners, media_category,
                                               in_reply_to_status_id, auto_populate_reply_metadata,
-                                              exclude_reply_user_ids,  latitude, longitude,
+                                              exclude_reply_user_ids, latitude, longitude,
                                               place_id, display_coordinates, trim_user, verify_status_length,
                                               attachment_url)
 
