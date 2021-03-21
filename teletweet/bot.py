@@ -28,7 +28,7 @@ from tweet import get_me, delete_tweet, download_video_from_id, is_video_tweet, 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 logging.getLogger('apscheduler.executors.default').propagate = False
 media_group = {}
-bot = telebot.TeleBot(BOT_TOKEN)
+bot = telebot.TeleBot(BOT_TOKEN, num_threads=10)
 init_enc()
 lock = Lock()
 
