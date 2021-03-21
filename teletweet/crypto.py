@@ -22,7 +22,7 @@ from config import CONSUMER_KEY, CONSUMER_SECRET
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 
 
-def can_use(chat_id) -> bool:
+def has_auth_data(chat_id) -> bool:
     plaintext: dict = json.loads(decrypt(read_file()))
     return plaintext.get(str(chat_id))
 
@@ -92,7 +92,7 @@ def sign_in(chat_id: str, user_text: str) -> str:
 
 
 def is_sign_in(chat_id: str) -> bool:
-    return can_use(chat_id)
+    return has_auth_data(chat_id)
 
 
 def init_enc():

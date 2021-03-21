@@ -22,7 +22,7 @@ from twitter.twitter_utils import calc_expected_status_length
 from twitter.api import CHARACTER_LIMIT
 
 from config import BOT_TOKEN, tweet_format, reply_json
-from crypto import can_use, sign_in, init_enc, sign_off, is_sign_in
+from crypto import has_auth_data, sign_in, init_enc, sign_off, is_sign_in
 from tweet import get_me, delete_tweet, download_video_from_id, is_video_tweet, remain_char, send_tweet
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
@@ -106,13 +106,29 @@ def delete_handler(message):
         # bot.delete_message(message.chat.id,message.reply_to_message.message_id)
 
 
+def group_permission_check(message):
+    allow = False
+    if message.chat.type in ("supergroup", "group"):
+        admin_ids = [i.user.id for i in bot.get_chat_administrators(message.chat.id)]
+        bot_id = bot.get_me().id
+        from_id = message.from_user.id
+        if (bot_id in admin_ids) or (from_id in admin_ids):
+            allow = True
+    else:
+        allow = True
+    return allow
+
+
 @bot.message_handler()
 def tweet_text_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    if not can_use(message.chat.id):
+    if not has_auth_data(message.chat.id):
         bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
         return
 
+    if not group_permission_check(message):
+        bot.send_message(message.chat.id, "Sorry, you don't have the permission to send tweets.")
+        return
     # first check if the user want to download video, gif
     tweet_id = is_video_tweet(message.chat.id, message.text)
     if tweet_id and message.text.startswith("https://twitter.com") and (not getattr(message, "force", False)):
@@ -128,7 +144,7 @@ def tweet_text_handler(message):
 
 @bot.message_handler(content_types=['photo', 'document', 'video'])
 def tweet_photo_handler(message):
-    if not can_use(message.chat.id):
+    if not has_auth_data(message.chat.id):
         logging.warning("Invalid user %d", message.chat.id)
         bot.send_chat_action(message.chat.id, 'typing')
         bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
