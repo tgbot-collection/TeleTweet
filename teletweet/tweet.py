@@ -146,7 +146,7 @@ def __get_tweet_id_from_reply(message) -> int:
 def __get_tweet_id_from_url(url) -> int:
     try:
         # https://twitter.com/williamwoo7/status/1326147700425809921?s=20
-        tweet_id = re.findall(r"https://twitter\.com/.+/status/(\d+)", url)[0]
+        tweet_id = re.findall(r"https?://twitter\.com/.+/status/(\d+)", url)[0]
     except IndexError:
         tweet_id = None
     return tweet_id
@@ -216,4 +216,4 @@ def remain_char(tweet: str) -> str:
 
 if __name__ == '__main__':
     print(__get_tweet_id_from_url("https://twitter.com/williamwoo7/status/1326147700425809921?s=20"))
-    print(__get_tweet_id_from_url("https://twitter.com/nixcraft/status/1326077772117078018?s=09"))
+    print(__get_tweet_id_from_url("http://twitter.com/nixcraft/status/1326077772117078018?s=09"))
