@@ -142,7 +142,7 @@ def tweet_text_handler(message):
     send_tweet_entrance(message)
 
 
-@bot.message_handler(content_types=['photo', 'document', 'video'])
+@bot.message_handler(content_types=['photo', 'document', 'video', 'sticker'])
 def tweet_photo_handler(message):
     if not has_auth_data(message.chat.id):
         logging.warning("Invalid user %d", message.chat.id)
@@ -302,19 +302,10 @@ def download_file_from_id(file_id):
 
 
 def get_file_id(message) -> str:
-    if message.photo:
-        object_type = "photo"
-    elif message.video:
-        object_type = "video"
-    elif message.document:
-        object_type = "document"
-    else:
-        object_type = ""
-
     try:
-        file_id = getattr(message, object_type)[-1].file_id
+        file_id = getattr(message, message.content_type)[-1].file_id
     except Exception:
-        file_id = getattr(message, object_type).file_id
+        file_id = getattr(message, message.content_type).file_id
     return file_id
 
 
