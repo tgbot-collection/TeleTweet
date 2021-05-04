@@ -16,4 +16,4 @@ RUN apk update && apk add --no-cache libressl && cd /TeleTweet && rm -rf assets 
 
 ENV TZ=Asia/Shanghai
 WORKDIR /TeleTweet/teletweet
-CMD ["python", "bot.py"]
+CMD ["python", "tweetbot.py"]
