@@ -28,9 +28,11 @@ from tweet import get_me, delete_tweet, download_video_from_id, is_video_tweet, 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 logging.getLogger('apscheduler.executors.default').propagate = False
 media_group = {}
-bot = telebot.TeleBot(BOT_TOKEN, num_threads=10)
+bot = telebot.TeleBot(BOT_TOKEN, num_threads=100)
 init_enc()
 lock = Lock()
+
+ALLOW_USER = os.getenv("ALLOW_USER", "").split(",")
 
 
 @bot.message_handler(commands=['start'])
@@ -42,6 +44,8 @@ def start_handler(message):
     msg = 'Welcome to TeleTweet. ' \
           'This bot will connect you from Telegram Bot to Twitter. ' \
           'Want to get started now? Type /sign_in now!'
+    if ALLOW_USER != ['']:
+        msg += "\n\nTHIS BOT IS ONLY AVAILABLE TO CERTAIN USERS. Contact creator for help."
     bot.send_message(message.chat.id, msg)
 
 
@@ -119,7 +123,19 @@ def group_permission_check(message):
     return allow
 
 
+def user_check(func):
+    def wrapper(message):
+        user_id = message.chat.id
+        if str(user_id) in ALLOW_USER:
+            return func(message)
+        else:
+            bot.send_message(message.chat.id, "You're not allowed to use this bot.")
+
+    return wrapper
+
+
 @bot.message_handler()
+@user_check
 def tweet_text_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
     if not has_auth_data(message.chat.id):
@@ -143,6 +159,7 @@ def tweet_text_handler(message):
 
 
 @bot.message_handler(content_types=['photo', 'document', 'video', 'sticker'])
+@user_check
 def tweet_photo_handler(message):
     if not has_auth_data(message.chat.id):
         logging.warning("Invalid user %d", message.chat.id)

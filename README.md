@@ -1,7 +1,9 @@
 # TwitterBot
 🦉 A telegram Twitter bot that will allow you to send tweets!
 
-[TeleTweet](https://t.me/tele_tweetbot)
+**I'm bringing down this bot because someone is spamming. The code is still working if you deploy your own bot.**
+
+![](assets/announcement.png)
 
 # Features
 All the following features rely on authorized users.
@@ -113,6 +115,9 @@ export TOKEN="BOT_TOKEN" \
 touch teletweet/database.enc
 python3 teletweet/bot.py
 ```
+If you want the bot to be only available to you, please setup `ALLOW_USER`, supplied with your own Telegram User ID.
+Use `,` to separate.
+
 ## Web server
 ```shell script
 vim twauth.py
