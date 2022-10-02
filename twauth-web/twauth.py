@@ -27,7 +27,7 @@ show_user_url = 'https://api.twitter.com/1.1/users/show.json'
 
 APP_CONSUMER_KEY = os.environ.get("CONSUMER_KEY") or '1'
 APP_CONSUMER_SECRET = os.environ.get("CONSUMER_SECRET") or '2'
-callback_url = os.environ.get("CALLBACK_URL") or "http://127.0.0.1:8888/callback"
+callback_url = os.environ.get("CALLBACK_URL") 
 
 oauth_store = {}
 
