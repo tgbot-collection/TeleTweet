@@ -132,3 +132,4 @@ dmypy.json
 /.idea/vcs.xml
 
 setup.sh
+/teletweet/auth.json

@@ -7,19 +7,21 @@
 
 __author__ = "Benny <benny.think@gmail.com>"
 
-import traceback
 import logging
 import re
 import tempfile
-import filetype
 import time
-import twitter
+import traceback
+
+import filetype
 import requests
-from twitter.twitter_utils import calc_expected_status_length
+import twitter
 from twitter.api import CHARACTER_LIMIT
 from twitter.error import TwitterError
+from twitter.twitter_utils import calc_expected_status_length
+
 from config import CONSUMER_KEY, CONSUMER_SECRET
-from crypto import decrypt_to_auth
+from helper import get_auth_data
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 
@@ -80,6 +82,9 @@ def __connect_twitter(auth_data: dict):
                   sleep_on_rate_limit=True)
 
 
+# database format
+
+
 def send_tweet(message, pic=None) -> dict:
     logging.info("Preparing tweet for someone...")
     chat_id = message.chat.id
@@ -88,7 +93,7 @@ def send_tweet(message, pic=None) -> dict:
         text = ""
     tweet_id = __get_tweet_id_from_reply(message)
     try:
-        api = __connect_twitter(decrypt_to_auth(chat_id))
+        api = __connect_twitter(get_auth_data(chat_id))
         logging.info("Tweeting...")
         status = api.PostUpdate(text, media=pic, in_reply_to_status_id=tweet_id)
         logging.info("Tweeted")
@@ -103,7 +108,7 @@ def send_tweet(message, pic=None) -> dict:
 def get_me(chat_id) -> str:
     logging.info("Get me!")
     try:
-        api = __connect_twitter(decrypt_to_auth(chat_id))
+        api = __connect_twitter(get_auth_data(chat_id))
         name = api.VerifyCredentials().name
         user_id = api.VerifyCredentials().screen_name
         response = f"[{name}](https://twitter.com/{user_id})"
@@ -122,7 +127,7 @@ def delete_tweet(message) -> dict:
         return {"error": "Which tweet do you want to delete? This does not seem like a valid tweet message."}
 
     try:
-        api = __connect_twitter(decrypt_to_auth(chat_id))
+        api = __connect_twitter(get_auth_data(chat_id))
         logging.info("Deleting......")
         status = api.DestroyStatus(tweet_id)
         response = status.AsDict()
@@ -154,7 +159,7 @@ def __get_tweet_id_from_url(url) -> int:
 
 def download_video_from_id(chat_id, tweet_id):
     try:
-        api = __connect_twitter(decrypt_to_auth(chat_id))
+        api = __connect_twitter(get_auth_data(chat_id))
 
         logging.info("Getting video tweets......")
         status = api.GetStatus(tweet_id)
@@ -173,7 +178,7 @@ def is_video_tweet(chat_id, text) -> str:
     logging.info("tweet id is %s", tweet_id)
     result = ""
     try:
-        api = __connect_twitter(decrypt_to_auth(chat_id))
+        api = __connect_twitter(get_auth_data(chat_id))
         logging.info("Getting video tweets......")
         status = api.GetStatus(tweet_id)
         url = __get_video_url(status.AsDict())

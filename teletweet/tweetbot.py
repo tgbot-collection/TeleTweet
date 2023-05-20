@@ -7,29 +7,29 @@
 
 __author__ = "Benny <benny.think@gmail.com>"
 
-import os
-import tempfile
-import logging
 import copy
+import logging
+import os
 import re
+import tempfile
 from threading import Lock
 
 import telebot
+from apscheduler.schedulers.background import BackgroundScheduler
 from telebot import types
 from tgbot_ping import get_runtime
-from apscheduler.schedulers.background import BackgroundScheduler
-from twitter.twitter_utils import calc_expected_status_length
 from twitter.api import CHARACTER_LIMIT
+from twitter.twitter_utils import calc_expected_status_length
 
-from config import BOT_TOKEN, tweet_format, reply_json
-from crypto import has_auth_data, sign_in, init_enc, sign_off, is_sign_in
-from tweet import get_me, delete_tweet, download_video_from_id, is_video_tweet, remain_char, send_tweet
+from config import BOT_TOKEN, reply_json, tweet_format
+from helper import get_auth_data, sign_in, sign_off
+from tweet import (delete_tweet, download_video_from_id, get_me,
+                   is_video_tweet, remain_char, send_tweet)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s [%(levelname)s]: %(message)s')
 logging.getLogger('apscheduler.executors.default').propagate = False
 media_group = {}
 bot = telebot.TeleBot(BOT_TOKEN, num_threads=100)
-init_enc()
 lock = Lock()
 
 ALLOW_USER = os.getenv("ALLOW_USER", "").split(",")
@@ -38,7 +38,7 @@ ALLOW_USER = os.getenv("ALLOW_USER", "").split(",")
 @bot.message_handler(commands=['start'])
 def start_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    if is_sign_in(message.chat.id):
+    if get_auth_data(message.chat.id):
         bot.send_message(message.chat.id, "Start by sending me a message?")
         return
     msg = 'Welcome to TeleTweet. ' \
@@ -51,7 +51,7 @@ def start_handler(message):
 
 @bot.message_handler(commands=['sign_in'])
 def sign_in_handler(message):
-    if is_sign_in(message.chat.id):
+    if get_auth_data(message.chat.id):
         bot.send_message(message.chat.id, "You have already signed in, no need to do it again.")
         return
 
@@ -65,8 +65,8 @@ def sign_in_handler(message):
 @bot.message_handler(commands=['sign_off'])
 def sign_off_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    if not is_sign_in(str(message.chat.id)):
-        bot.send_message(message.chat.id, "Lazarus came back from the dead.\nYou haven't signed in yet.")
+    if not get_auth_data(str(message.chat.id)):
+        bot.send_message(message.chat.id, "You haven't signed in yet.")
         return
 
     sign_off(str(message.chat.id))
@@ -138,7 +138,7 @@ def user_check(func):
 @user_check
 def tweet_text_handler(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    if not has_auth_data(message.chat.id):
+    if not get_auth_data(message.chat.id):
         bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
         return
 
@@ -161,7 +161,7 @@ def tweet_text_handler(message):
 @bot.message_handler(content_types=['photo', 'document', 'video', 'sticker'])
 @user_check
 def tweet_photo_handler(message):
-    if not has_auth_data(message.chat.id):
+    if not get_auth_data(message.chat.id):
         logging.warning("Invalid user %d", message.chat.id)
         bot.send_chat_action(message.chat.id, 'typing')
         bot.send_message(message.chat.id, "Sorry, I can't find your auth data. Type /sign_in to try again.")
