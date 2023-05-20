@@ -6,7 +6,7 @@ RUN pip3 install --user -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 
 
-FROM python:3.10-alpine
+FROM python:3.11-alpine
 
 COPY --from=builder /root/.local /usr/local
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
