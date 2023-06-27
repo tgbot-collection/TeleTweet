@@ -14,3 +14,6 @@ services:
     restart: always
     env_file:
       - env/teletweet.env
+    working_dir: /TeleTweet/twauth-web
+    command:
+      - python twauth-web/twauth.py
