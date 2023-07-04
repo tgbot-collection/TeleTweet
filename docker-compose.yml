@@ -5,7 +5,7 @@ services:
     image: bennythink/teletweet
     restart: on-failure
     volumes:
-      - ./data/teletweet.enc:/TeleTweet/teletweet/database.enc
+      - ./env/auth.json:/TeleTweet/teletweet/auth.json
     env_file:
       - env/teletweet.env
 
