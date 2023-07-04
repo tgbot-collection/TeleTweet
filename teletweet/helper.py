@@ -9,12 +9,13 @@ import logging
 from base64 import b64decode
 
 
-def get_auth_data(chat_id: str) -> dict:
+def get_auth_data(chat_id: int) -> dict:
+    chat_id = str(chat_id)
     data = json.load(open("auth.json", "r"))
     return data.get(str(chat_id), {})
 
 
-def sign_in(chat_id: str, auth_string):
+def sign_in(chat_id: int, auth_string):
     logging.info("Adding user oauth token...")
     auth_dict = b64decode(auth_string.encode("u8")).decode("u8")
     data = json.load(open("auth.json", "r"))

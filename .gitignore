@@ -133,3 +133,5 @@ dmypy.json
 
 setup.sh
 /teletweet/auth.json
+/teletweet/teletweet.session
+/teletweet/teletweet.session-journal
