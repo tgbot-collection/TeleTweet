@@ -15,4 +15,6 @@ services:
     env_file:
       - env/teletweet.env
     working_dir: /TeleTweet/twauth-web
-    command: python twauth.py
+    command: python twauth.py -h=0.0.0.0
+    ports:
+      - "8888:8888"
