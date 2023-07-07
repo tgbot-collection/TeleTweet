@@ -10,7 +10,7 @@ __author__ = "Benny <benny.think@gmail.com>"
 import os
 
 BOT_TOKEN = os.getenv("TOKEN", "fghjk789")
-APP_ID = os.getenv("APP_ID", "456fgh78")
+APP_ID = int(os.getenv("APP_ID", "456fgh78"))
 APP_HASH = os.getenv("APP_HASH", "456gfhj78")
 
 CONSUMER_KEY = os.getenv("CONSUMER_KEY", "456fghj78")
