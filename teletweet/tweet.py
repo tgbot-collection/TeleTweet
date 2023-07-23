@@ -9,14 +9,10 @@ __author__ = "Benny <benny.think@gmail.com>"
 
 import logging
 import re
-import time
 import traceback
+from typing import Union
 
-import filetype
-import twitter
-from twitter.api import CHARACTER_LIMIT
-from twitter.error import TwitterError
-from twitter.twitter_utils import calc_expected_status_length
+import tweepy
 
 from config import CONSUMER_KEY, CONSUMER_SECRET
 from helper import get_auth_data
@@ -24,91 +20,38 @@ from helper import get_auth_data
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(filename)s [%(levelname)s]: %(message)s")
 
 
-class NewApi(twitter.Api):
-    def PostUpdate(
-        self,
-        status,
-        media=None,
-        media_additional_owners=None,
-        media_category=None,
-        in_reply_to_status_id=None,
-        auto_populate_reply_metadata=False,
-        exclude_reply_user_ids=None,
-        latitude=None,
-        longitude=None,
-        place_id=None,
-        display_coordinates=False,
-        trim_user=False,
-        verify_status_length=True,
-        attachment_url=None,
-    ):
-        # if this is [file], single photo or media
-        if media and len(media) == 1:
-            media_type = filetype.guess(media[0]).mime
-            if media_type and "video" in media_type:
-                # we'll first try the ordinary one, if that fails, execute new method in exception
-                try:
-                    return super(NewApi, self).PostUpdate(
-                        status,
-                        media[0],
-                        media_additional_owners,
-                        media_category,
-                        in_reply_to_status_id,
-                        auto_populate_reply_metadata,
-                        exclude_reply_user_ids,
-                        latitude,
-                        longitude,
-                        place_id,
-                        display_coordinates,
-                        trim_user,
-                        verify_status_length,
-                        attachment_url,
-                    )
-                except TwitterError:
-                    logging.warning("possible long video, trying new method...")
-                    video_id = self.UploadMediaChunked(media=media[0], media_category="tweet_video")
-                    logging.info("video id is %s, status is %s", video_id, status)
-                    time.sleep(20)
-                    # Waits until the async processing of the uploaded media finishes and `video_id` becomes valid.
-                    status = super(NewApi, self).PostUpdate(
-                        status=status, media=video_id, in_reply_to_status_id=in_reply_to_status_id
-                    )
-                    return status
-
-        return super(NewApi, self).PostUpdate(
-            status,
-            media,
-            media_additional_owners,
-            media_category,
-            in_reply_to_status_id,
-            auto_populate_reply_metadata,
-            exclude_reply_user_ids,
-            latitude,
-            longitude,
-            place_id,
-            display_coordinates,
-            trim_user,
-            verify_status_length,
-            attachment_url,
-        )
-
-
 def __connect_twitter(chat_id: int):
     auth_data = get_auth_data(chat_id)
     logging.info("Connecting to twitter api...")
-    return NewApi(
+    client = tweepy.Client(
         consumer_key=CONSUMER_KEY,
         consumer_secret=CONSUMER_SECRET,
-        access_token_key=auth_data["ACCESS_KEY"],
+        access_token=auth_data["ACCESS_KEY"],
         access_token_secret=auth_data["ACCESS_SECRET"],
-        sleep_on_rate_limit=True,
     )
+    api = tweepy.API(
+        tweepy.OAuth1UserHandler(
+            consumer_key=CONSUMER_KEY,
+            consumer_secret=CONSUMER_SECRET,
+            access_token=auth_data["ACCESS_KEY"],
+            access_token_secret=auth_data["ACCESS_SECRET"],
+        )
+    )
+    return client, api
 
 
-# database format
+def upload_media(api, pic) -> Union[list, None]:
+    if pic is None:
+        return None
+    ids = []
+    for item in pic:
+        item.seek(0)
+        mid = api.media_upload(item.name, file=item)
+        ids.append(mid)
+    return [i.media_id for i in ids]
 
 
-def send_tweet(message, pic=None) -> dict:
+def send_tweet(message, pics: Union[list, None] = None) -> dict:
     logging.info("Preparing tweet for...")
     chat_id = message.chat.id
     text = message.text or message.caption
@@ -116,11 +59,12 @@ def send_tweet(message, pic=None) -> dict:
         text = ""
     tweet_id = __get_tweet_id_from_reply(message)
     try:
-        api = __connect_twitter(chat_id)
+        client, api = __connect_twitter(chat_id)
         logging.info("Tweeting...")
-        status = api.PostUpdate(text, media=pic, in_reply_to_status_id=tweet_id)
+        ids = upload_media(api, pics)
+        status = client.create_tweet(text=text, media_ids=ids, in_reply_to_tweet_id=tweet_id)
         logging.info("Tweeted")
-        response = status.AsDict()
+        response = status.data
     except Exception as e:
         logging.error(traceback.format_exc())
         response = {"error": str(e)}
@@ -131,9 +75,10 @@ def send_tweet(message, pic=None) -> dict:
 def get_me(chat_id) -> str:
     logging.info("Get me!")
     try:
-        api = __connect_twitter(chat_id)
-        name = api.VerifyCredentials().name
-        user_id = api.VerifyCredentials().screen_name
+        client, api = __connect_twitter(chat_id)
+        me = client.get_me().data
+        name = me["name"]
+        user_id = me["username"]
         response = f"[{name}](https://twitter.com/{user_id})"
     except Exception as e:
         logging.error(traceback.format_exc())
@@ -150,10 +95,9 @@ def delete_tweet(message) -> dict:
         return {"error": "Which tweet do you want to delete? This does not seem like a valid tweet message."}
 
     try:
-        api = __connect_twitter(chat_id)
+        client, api = __connect_twitter(chat_id)
         logging.info("Deleting......")
-        status = api.DestroyStatus(tweet_id)
-        response = status.AsDict()
+        response = client.delete_tweet(tweet_id).data
     except Exception as e:
         logging.error(traceback.format_exc())
         response = {"error": str(e)}
@@ -181,9 +125,9 @@ def __get_tweet_id_from_url(url) -> int:
 
 
 def get_video_download_link(chat_id, tweet_id):
-    api = __connect_twitter(chat_id)
+    client, api = __connect_twitter(chat_id)
     logging.info("Getting video tweets......")
-    status = api.GetStatus(tweet_id)
+    status = client.get_tweet(tweet_id).data
     return __get_video_url(status.AsDict())
 
 
@@ -191,11 +135,12 @@ def is_video_tweet(chat_id, text) -> str:
     # will return an id
     tweet_id = __get_tweet_id_from_url(text)
     logging.info("tweet id is %s", tweet_id)
-    api = __connect_twitter(chat_id)
+    client, api = __connect_twitter(chat_id)
     logging.info("Getting video tweets......")
     try:
-        status = api.GetStatus(tweet_id)
-        if __get_video_url(status.AsDict()):
+        # TODO I don't have permission to this. Thank you Elon Musk.
+        status = client.get_tweet(tweet_id)
+        if __get_video_url(status.data):
             return str(tweet_id)
     except Exception as e:
         logging.debug(traceback.format_exc())

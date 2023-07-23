@@ -6,3 +6,4 @@ requests==2.31.0
 tgbot-ping==1.0.7
 tornado==6.3.2
 tgcrypto==1.2.5
+tweepy==4.14.0

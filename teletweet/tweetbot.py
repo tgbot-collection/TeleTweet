@@ -9,7 +9,6 @@ __author__ = "Benny <benny.think@gmail.com>"
 
 import logging
 import os
-import re
 import tempfile
 from threading import Lock
 
@@ -44,11 +43,7 @@ def start_handler(client, message: types.Message):
     if get_auth_data(message.chat.id):
         bot.send_message(message.chat.id, "Start by sending me a message?")
         return
-    msg = (
-        "Welcome to TeleTweet. "
-        "This bot will connect you from Telegram Bot to Twitter. "
-        "Want to get started now? Type /sign_in now!"
-    )
+    msg = "Welcome to TeleTweet. " "This bot will connect you from Telegram Bot to Twitter. " "Want to get started now? Type /sign_in now!"
     if ALLOW_USER != [""]:
         msg += "\n\nTHIS BOT IS ONLY AVAILABLE TO CERTAIN USERS. Contact creator for help."
     bot.send_message(message.chat.id, msg)
@@ -60,10 +55,7 @@ def sign_in_handler(client, message: types.Message):
         bot.send_message(message.chat.id, "You have already signed in, no need to do it again.")
         return
     message.reply_chat_action(enums.ChatAction.TYPING)
-    msg = (
-        "Click this [link](https://teletweet.app) to login in you twitter."
-        " When your login in is done, send auth code back to me"
-    )
+    msg = "Click this [link](https://teletweet.app) to login in you twitter." " When your login in is done, send auth code back to me"
     bot.send_message(message.chat.id, msg, enums.ParseMode.MARKDOWN)
     STEP[message.chat.id] = "sign_in"
 
@@ -77,8 +69,7 @@ def sign_off_handler(client, message: types.Message):
 
     sign_off(str(message.chat.id))
     msg = (
-        "I'm sorry to see you go. I have delete your oauth token."
-        "By the way, you could also check [this link](https://twitter.com/settings/connected_apps)."
+        "I'm sorry to see you go. I have delete your oauth token." "By the way, you could also check [this link](https://twitter.com/settings/connected_apps)."
     )
     bot.send_message(message.chat.id, msg, enums.ParseMode.MARKDOWN)
 
@@ -99,9 +90,7 @@ def help_handler(client, message: types.Message):
         userinfo = "Hello👋 unknown user! Want to `/sign_in` now?\n\n"
 
     info = get_runtime("botsrunner_teletweet_1")[:500]
-    bot.send_message(
-        message.chat.id, userinfo + info, parse_mode=enums.ParseMode.MARKDOWN, disable_web_page_preview=True
-    )
+    bot.send_message(message.chat.id, userinfo + info, parse_mode=enums.ParseMode.MARKDOWN, disable_web_page_preview=True)
 
 
 @bot.on_message(filters.command(["delete"]))
@@ -115,7 +104,7 @@ def delete_handler(client, message: types.Message):
         resp = f"❌ Error: `{result['error']}`"
         message.reply_text(resp, quote=True, parse_mode=enums.ParseMode.MARKDOWN)
     else:
-        resp = f"🗑 Your tweet `{result['text']}` has been deleted.\n"
+        resp = f"🗑 Your tweet has been deleted.\n"
         message.reply_to_message.edit_text(resp, parse_mode=enums.ParseMode.MARKDOWN)
 
 
@@ -205,7 +194,7 @@ def notify_result(result, message: types.Message):
     if result.get("error"):
         resp = f"❌ Error: `{result['error']}`"
     else:
-        url = tweet_format.format(screen_name=result["user"]["screen_name"], id=result["id"])
+        url = tweet_format.format(screen_name="x", id=result["id"])
         resp = f"✅ Your [tweet]({url}) has been sent.\n"
     message.reply_text(resp, quote=True, parse_mode=enums.ParseMode.MARKDOWN)
 
