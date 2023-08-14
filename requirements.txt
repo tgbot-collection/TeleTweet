@@ -4,6 +4,6 @@ pyrogram==2.0.106
 git+https://github.com/tgbot-collection/python-twitter
 requests==2.31.0
 tgbot-ping==1.0.7
-tornado==6.3.2
+tornado==6.3.3
 tgcrypto==1.2.5
 tweepy==4.14.0
