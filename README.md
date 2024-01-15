@@ -4,10 +4,6 @@
 
 Supports Twitter API v2! 🎉🎉🎉🎉🎉🎉
 
-# Public Bot has been discontinued
-
-![](assets/announcement.png)
-
 # Features
 
 All the following features rely on authorized users.

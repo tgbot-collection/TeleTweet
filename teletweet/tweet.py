@@ -58,16 +58,22 @@ def send_tweet(message, pics: Union[list, None] = None) -> dict:
     if not text:
         text = ""
     tweet_id = __get_tweet_id_from_reply(message)
+    client, api = __connect_twitter(chat_id)
+    logging.info("Tweeting...")
+    ids = upload_media(api, pics)
     try:
-        client, api = __connect_twitter(chat_id)
-        logging.info("Tweeting...")
-        ids = upload_media(api, pics)
         status = client.create_tweet(text=text, media_ids=ids, in_reply_to_tweet_id=tweet_id)
         logging.info("Tweeted")
         response = status.data
     except Exception as e:
-        logging.error(traceback.format_exc())
-        response = {"error": str(e)}
+        if "Your Tweet text is too long." in str(e):
+            logging.warning("Tweet too long, trying to make it shorter...")
+            # try to post by making it shorter
+            status = client.create_tweet(text=text[:110] + "...", media_ids=ids, in_reply_to_tweet_id=tweet_id)
+            response = status.data
+        else:
+            logging.error(traceback.format_exc())
+            response = {"error": str(e)}
 
     return response
 
